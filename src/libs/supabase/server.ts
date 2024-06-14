@@ -20,6 +20,7 @@ export const supabase = () =>
           const session = await getSession();
           return session.data[name];
         },
+
         async set(name: string, value: string, options) {
           try {
             const session = await getSession();
