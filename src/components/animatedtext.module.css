@@ -1,0 +1,10 @@
+.word {
+  translate: 0px 1.2em;
+  display: inline-block;
+  clip-path: inset(0px 0px 100% 0px);
+  transition-property: clip-path, translate, opacity;
+}
+
+:global(.in-view) .word {
+  clip-path: inset(0px 0px -0.2em 0px);
+}

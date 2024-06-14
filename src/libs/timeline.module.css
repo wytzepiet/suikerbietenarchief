@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .timeline {
+    position: relative;
+    width: 90vw;
+    max-width: 1200px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1px;
+  }
+  .line {
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      hsl(var(--muted-foreground)) 100px,
+      hsl(var(--muted-foreground)) calc(100% - 100px),
+      transparent
+    );
+    width: 1px;
+    grid-column: 2;
+    grid-row: 1 / -1;
+    height: 0px;
+    transition: height 0.8s cubic-bezier(0.7, 0, 0.84, 0);
+  }
+  :global(.in-view) .line {
+    height: 100%;
+  }
+  .item {
+    position: relative;
+    grid-column: 3;
+    margin-top: 100px;
+  }
+  .item:nth-child(2) {
+    margin-top: 300px;
+  }
+  .itemLine {
+    @apply w-0 border-t-muted-foreground border-t-[1px];
+    transition: width 0.8s 0.1s;
+  }
+  .item:global(.in-view) .itemLine {
+    width: 50px;
+  }
+  .point {
+    @apply bg-background border-muted-foreground;
+    border-width: 1px;
+    position: absolute;
+    height: 0px;
+    width: 0px;
+    border-radius: 10px;
+    box-sizing: border-box;
+
+    z-index: 2;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.515, 0.01, 0.67, 1.535);
+  }
+  .item:global(.in-view) .point {
+    opacity: 1;
+    width: 10px;
+    height: 10px;
+    margin: -5.5px;
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+  }
+
+  .year {
+    font-weight: 100;
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 1s 0.2s;
+  }
+  .item:global(.in-view) .year {
+    opacity: 1;
+  }
+  .title {
+    margin-top: -0.2em;
+    transition: translate 1.5s 0s, opacity 2s 0.1s;
+  }
+  .content {
+    color: hsl(var(--muted-foreground));
+    transition: translate 1.5s 0.2s, opacity 2s 0.3s;
+  }
+  .title,
+  .content {
+    padding: 0px 50px;
+    opacity: 0;
+    translate: 40px 0px;
+  }
+  .item:global(.in-view) :where(.title, .content) {
+    opacity: 1;
+    translate: 0px 0px;
+  }
+}
+
+@media only screen and (min-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr 1px 1fr;
+  }
+  .item:nth-child(even) {
+    grid-column: 1;
+  }
+  .item {
+    grid-row: span 2;
+    margin-top: 500px;
+    margin-bottom: 100px;
+  }
+  .item:nth-child(3) {
+    grid-row: 2 / 4;
+  }
+  .item:nth-child(even) :where(.title, .content) {
+    translate: -40px 0px;
+  }
+  .item:nth-child(even) .head {
+    flex-direction: row-reverse;
+  }
+}
