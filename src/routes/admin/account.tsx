@@ -19,26 +19,26 @@ import {
   TextFieldLabel,
   TextFieldRoot,
 } from "@/components/ui/textfield";
-import { supabase } from "@/libs/supabase/client/frontEnd";
+import { supabase } from "@/libs/supabase/client";
 
 const updateEmail = action(async (formData: FormData) => {
   if (!formData.has("email")) return;
   const email = String(formData.get("email"));
   if (!email) return;
-  await supabase.auth.updateUser({ email });
+  await supabase().auth.updateUser({ email });
 });
 
 async function updatePassword() {
   if (!user()?.email) return;
-  await supabase.auth.resetPasswordForEmail(user()?.email!);
+  await supabase().auth.resetPasswordForEmail(user()?.email!);
 }
 
 export default function Account() {
   const navigate = useNavigate();
   async function deleteUser() {
-    const { data } = await supabase.auth.getSession();
+    const { data } = await supabase().auth.getSession();
     if (!data.session?.user.id) return;
-    await supabase.auth.admin.deleteUser(data.session?.user.id!);
+    await supabase().auth.admin.deleteUser(data.session?.user.id!);
     navigate("/");
   }
 

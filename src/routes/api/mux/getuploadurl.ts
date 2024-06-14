@@ -1,9 +1,7 @@
 "use server";
 
 import { mux } from "@/libs/mux/client";
-import { supabase } from "@/libs/supabase/server";
 import { json } from "@solidjs/router";
-import { createClient } from "@supabase/supabase-js";
 import { APIEvent } from "node_modules/@solidjs/start/dist/server";
 
 export async function GET(event: APIEvent) {

@@ -20,7 +20,7 @@ export const supabase = () =>
           const session = await getSession();
           return session.data[name];
         },
-        async set(name: string, value: string, options:) {
+        async set(name: string, value: string, options) {
           try {
             const session = await getSession();
             session.update((d) => (d[name] = value));
@@ -30,9 +30,8 @@ export const supabase = () =>
             // user sessions.
           }
         },
-        remove(name: string, options: CookieOptions) {
+        remove(name: string, options) {
           try {
-            cookieStore.set({ name, value: "", ...options });
           } catch (error) {
             // The `delete` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing

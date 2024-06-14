@@ -1,7 +1,7 @@
 import PageTitle from "@/components/pageTitle";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { supabase } from "@/libs/supabase/client/frontEnd";
+import { supabase } from "@/libs/supabase/client";
 import { A, RouteSectionProps, useNavigate } from "@solidjs/router";
 import {
   Calendar,
@@ -56,14 +56,14 @@ export default function Admin(props: RouteSectionProps) {
   const navigate = useNavigate();
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await supabase().auth.signOut();
     navigate("/login");
   }
 
   const [signOutDialogOpen, setSignOutDialogOpen] = createSignal(false);
 
   onMount(async () => {
-    const { data, error } = await supabase.auth.getSession();
+    const { data, error } = await supabase().auth.getSession();
     if (!data.session?.user) navigate("/login");
     setUser(data.session?.user);
   });

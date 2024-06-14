@@ -6,7 +6,7 @@ import {
   TextFieldLabel,
   TextFieldRoot,
 } from "@/components/ui/textfield";
-import { supabase } from "@/libs/supabase/client/frontEnd";
+import { supabase } from "@/libs/supabase/client";
 import { setUser } from "@/libs/supabase/user";
 import { action, useNavigate } from "@solidjs/router";
 import { createSignal } from "solid-js";
@@ -23,16 +23,18 @@ export default function Login() {
 
   const [error, setError] = createSignal("");
 
-  supabase.auth.getSession().then(({ data }) => {
-    if (data.session?.user) {
-      setUser(data.session.user);
-      navigate("/admin");
-    }
-  });
+  supabase()
+    .auth.getSession()
+    .then(({ data }) => {
+      if (data.session?.user) {
+        setUser(data.session.user);
+        navigate("/admin");
+      }
+    });
 
   const signIn = action(async (formData: FormData) => {
     console.log(email, password);
-    const { error, data } = await supabase.auth.signInWithPassword({
+    const { error, data } = await supabase().auth.signInWithPassword({
       email: String(formData.get("email")),
       password: String(formData.get("password")),
     });
