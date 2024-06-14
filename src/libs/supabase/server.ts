@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "./types";
 import { createServerClient } from "@supabase/ssr";
-import { useSession } from "vinxi/http";
+import { H3Event, getCookie, parseCookies, useSession } from "vinxi/http";
 
 function getSession() {
   if (!process.env.SESSION_SECRET) throw new Error("SESSION_SECRET is not set");
@@ -20,9 +20,9 @@ export const supabase = () =>
           const session = await getSession();
           return session.data[name];
         },
-
         async set(name: string, value: string, options) {
           try {
+            parseCookies;
             const session = await getSession();
             session.update((d) => (d[name] = value));
           } catch (error) {

@@ -1,0 +1,7 @@
+{
+  "build": {
+    "command": "bun build",
+    "outputDirectory": "dist"
+  },
+  "installCommand": "bun install"
+}
