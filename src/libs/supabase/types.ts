@@ -52,7 +52,10 @@ export type Database = {
           keywords: string[] | null
           playback_id: string | null
           prompt_hint: string | null
+          status: string | null
           title: string | null
+          transcript_id: string | null
+          updated_at: string | null
           upload_id: string | null
           user_id: string | null
         }
@@ -65,7 +68,10 @@ export type Database = {
           keywords?: string[] | null
           playback_id?: string | null
           prompt_hint?: string | null
+          status?: string | null
           title?: string | null
+          transcript_id?: string | null
+          updated_at?: string | null
           upload_id?: string | null
           user_id?: string | null
         }
@@ -78,7 +84,10 @@ export type Database = {
           keywords?: string[] | null
           playback_id?: string | null
           prompt_hint?: string | null
+          status?: string | null
           title?: string | null
+          transcript_id?: string | null
+          updated_at?: string | null
           upload_id?: string | null
           user_id?: string | null
         }

@@ -20,6 +20,7 @@ import {
   TextFieldRoot,
 } from "@/components/ui/textfield";
 import { supabase } from "@/libs/supabase/client";
+import { LogOut } from "lucide-solid";
 
 const updateEmail = action(async (formData: FormData) => {
   if (!formData.has("email")) return;
@@ -35,11 +36,17 @@ async function updatePassword() {
 
 export default function Account() {
   const navigate = useNavigate();
+
   async function deleteUser() {
     const { data } = await supabase().auth.getSession();
     if (!data.session?.user.id) return;
     await supabase().auth.admin.deleteUser(data.session?.user.id!);
     navigate("/");
+  }
+
+  async function signOut() {
+    await supabase().auth.signOut();
+    navigate("/login");
   }
 
   return (
@@ -49,7 +56,7 @@ export default function Account() {
       </div>
 
       <p class="">Email: {user()?.email}</p>
-      <div class="flex gap-4">
+      <div class="flex flex-wrap gap-4">
         <AlertDialog>
           <AlertDialogTrigger
             as={(props: AlertDialogTriggerProps) => (
@@ -112,27 +119,60 @@ export default function Account() {
 
       <Separator />
 
-      <AlertDialog>
-        <AlertDialogTrigger
-          as={(props: AlertDialogTriggerProps) => (
-            <Button variant="destructive" {...props}>
-              Account verwijderen
-            </Button>
-          )}
-        />
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Account verwijderen</AlertDialogTitle>
-            <AlertDialogDescription>
-              Weet je het zeker? Dit kan niet ongedaan worden gemaakt!
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogClose>Nee, annuleren</AlertDialogClose>
-            <Button variant="destructive">Ja, account verwijderen</Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <div class="flex gap-4 wrap">
+        <AlertDialog>
+          <AlertDialogTrigger
+            as={(props: AlertDialogTriggerProps) => (
+              <Button
+                variant="outline"
+                class="flex items-center gap-2"
+                {...props}
+              >
+                <LogOut size="1.2em" strokeWidth={3} />
+                Uitloggen
+              </Button>
+            )}
+          />
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Uitloggen</AlertDialogTitle>
+              <AlertDialogDescription>
+                Weet je het zeker?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogClose>Nee, annuleren</AlertDialogClose>
+              <AlertDialogAction onclick={signOut}>
+                Ja, log uit
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog>
+          <AlertDialogTrigger
+            as={(props: AlertDialogTriggerProps) => (
+              <Button variant="destructive" {...props}>
+                Account verwijderen
+              </Button>
+            )}
+          />
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Account verwijderen</AlertDialogTitle>
+              <AlertDialogDescription>
+                Weet je het zeker? Dit kan niet ongedaan worden gemaakt!
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogClose>Nee, annuleren</AlertDialogClose>
+              <Button variant="destructive" onclick={deleteUser}>
+                Ja, account verwijderen
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   );
 }

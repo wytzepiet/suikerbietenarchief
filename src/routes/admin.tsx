@@ -55,11 +55,6 @@ const menu = [
 export default function Admin(props: RouteSectionProps) {
   const navigate = useNavigate();
 
-  async function signOut() {
-    await supabase().auth.signOut();
-    navigate("/login");
-  }
-
   const [signOutDialogOpen, setSignOutDialogOpen] = createSignal(false);
 
   onMount(async () => {
@@ -73,16 +68,7 @@ export default function Admin(props: RouteSectionProps) {
       <PageTitle>Admin Page</PageTitle>
       {user() && (
         <div class="w-[1000px] max-w-full flex flex-col gap-4">
-          <div class="h-[100px] flex justify-end items-end">
-            <Button
-              variant="outline"
-              class="flex items-center gap-2"
-              onclick={() => setSignOutDialogOpen(true)}
-            >
-              <Power size="1.2em" strokeWidth={3} />
-              Uitloggen
-            </Button>
-          </div>
+          <div class="h-[50px]"></div>
           <Card class="flex items-stretch">
             <div class="min-w-[140px] border-r p-2 flex flex-col gap-2">
               {menu.map((item) => {
@@ -102,25 +88,6 @@ export default function Admin(props: RouteSectionProps) {
             </div>
             <div class="grow p-6">{props.children}</div>
           </Card>
-          <AlertDialog
-            open={signOutDialogOpen()}
-            onOpenChange={setSignOutDialogOpen}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Uitloggen</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Weet je het zeker?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogClose>Nee, annuleren</AlertDialogClose>
-                <AlertDialogAction onclick={signOut}>
-                  Ja, log uit
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </div>
       )}
     </div>

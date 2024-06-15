@@ -3,6 +3,7 @@
 import { mux } from "@/libs/mux/client";
 import { supabase } from "@/libs/supabase/server";
 import { APIEvent } from "node_modules/@solidjs/start/dist/server";
+import { getRequestURL } from "vinxi/http";
 
 function oopsie(message: string, status: number) {
   console.error(message);
@@ -10,6 +11,7 @@ function oopsie(message: string, status: number) {
 }
 export async function POST({ request }: APIEvent) {
   try {
+    const params = new URL(request.url).searchParams;
     // Parse the incoming request body
     // // const payload = await request.json();
     // const body = JSON.stringify(payload, null, 2);
@@ -66,6 +68,7 @@ export async function POST({ request }: APIEvent) {
       return new Response("OK", { status: 200 });
     }
     if (hook.type === "video.asset.static_renditions.ready") {
+      const asset_id = hook.data.id;
     }
 
     return new Response("OK", { status: 200 });

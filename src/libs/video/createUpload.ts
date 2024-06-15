@@ -4,7 +4,7 @@ import { Upload as MuxUpload } from "@mux/mux-node/resources/video/uploads.mjs";
 import { UpChunk } from "@mux/upchunk";
 import { user } from "../supabase/user";
 
-export type Status = "idle" | "uploading" | "done";
+export type Status = "idle" | "uploading" | "done" | "error" | "cancelled";
 export type Upload = ReturnType<typeof createUpload>;
 
 export function createUpload(file: File) {
@@ -13,10 +13,10 @@ export function createUpload(file: File) {
   const [status, setStatus] = createSignal<Status>("idle");
 
   /** A list of functions to call when the upload is removed */
-  const onRemove: (() => void)[] = [];
+  const onCancel: (() => void)[] = [];
 
   /** Cancel and remove the upload */
-  const remove = () => onRemove.forEach((fn) => fn());
+  const cancel = () => onCancel.forEach((fn) => fn());
 
   const [title, setTitle] = createSignal(file.name);
   // Whether to generate a description from the video using ChatGPT
@@ -59,7 +59,7 @@ export function createUpload(file: File) {
     const token = (await supabase().auth.getSession()).data.session
       ?.access_token;
 
-    fetch(`/api/mux/getuploadurl?token=${token}`).then(async (res) => {
+    fetch(`/api/video/getmuxuploadurl?token=${token}`).then(async (res) => {
       const { error, data } = (await res.json()) as {
         error?: string;
         data?: MuxUpload;
@@ -76,10 +76,10 @@ export function createUpload(file: File) {
       upChunk.on("error", (err) => setError(err.detail));
       upChunk.on("progress", (prog) => setProgress(prog.detail));
       upChunk.on("success", () => setStatus("done"));
-      onRemove.push(() => upChunk.abort());
+      onCancel.push(() => upChunk.abort());
 
       video.uploadId = data.id;
-      onRemove.push(async () => {
+      onCancel.push(async () => {
         const uploads = supabase().from("uploads");
         const res = await uploads.delete().eq("upload_id", data.id).select();
         console.log(user()?.id);
@@ -108,8 +108,8 @@ export function createUpload(file: File) {
     file,
     video,
     start,
-    remove,
-    onRemove,
+    cancel,
+    onCancel: onCancel,
     error,
     setError,
     progress,

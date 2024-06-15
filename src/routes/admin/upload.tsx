@@ -32,13 +32,14 @@ export default function UploadVideos() {
   const filterUploads = (s: Status) => uploads().filter((u) => u.status() == s);
   const newUploads = createMemo(() => filterUploads("idle"));
   const busyUploads = createMemo(() => filterUploads("uploading"));
+  const doneUploads = createMemo(() => filterUploads("done"));
 
   function createUploads(files: FileList | null) {
     if (!files) return;
     const newUploads = [...files].map((file) => {
       const upload = createUpload(file);
 
-      upload.onRemove.push(() => {
+      upload.onCancel.push(() => {
         setUploads(uploads().filter((u) => u.file !== file));
       });
       return upload;
@@ -58,7 +59,7 @@ export default function UploadVideos() {
 
       <Card class="relative h-52 w-72 flex flex-col justify-center items-center gap-2">
         <Button variant="secondary">Upload Videos</Button>
-        <p class="text-muted-foreground">of drop ze hier</p>
+        <p class="text-muted-foreground text-sm">of drop ze hier</p>
         <input
           type="file"
           multiple
@@ -72,19 +73,20 @@ export default function UploadVideos() {
         Start upload
       </Button>
 
-      <Show when={newUploads().length}>
-        <p class="text-muted-foreground text-sm">Nieuwe uploads</p>
-        <For each={newUploads()}>
-          {(upload) => <UploadDetails upload={upload} />}
-        </For>
-      </Show>
-      <Show when={busyUploads().length}>
-        <p class="text-muted-foreground text-sm">Bezig met uploaden</p>
-        <For each={busyUploads()}>
-          {(upload) => <UploadDetails upload={upload} />}
-        </For>
-      </Show>
+      <UploadList list={newUploads()} title="Nieuwe uploads" />
+      <UploadList list={busyUploads()} title="Bezig met uploaden" />
+      <UploadList list={doneUploads()} title="Klaar" />
     </div>
+  );
+}
+
+function UploadList(props: { list: Upload[]; title: string }) {
+  return (
+    <Show when={props.list.length}>
+      <Separator />
+      <p class="text-muted-foreground text-sm">{props.title}</p>
+      <For each={props.list}>{(u) => <UploadDetails upload={u} />}</For>
+    </Show>
   );
 }
 
@@ -109,7 +111,10 @@ function UploadDetails({ upload }: { upload: Upload }) {
           <p>{bytesToSize(upload.file.size)}</p>
           <div class="flex gap-2 items-center">
             <Show when={upload.status() == "done"}>
-              <p>Done!</p>
+              <p>Klaar!</p>
+            </Show>
+            <Show when={upload.status() == "cancelled"}>
+              <p>Geannulleerd</p>
             </Show>
             <Show when={upload.status() == "uploading"}>
               <p>{upload.progress().toFixed(1)}%</p>
@@ -118,7 +123,7 @@ function UploadDetails({ upload }: { upload: Upload }) {
             <Button
               variant="outline"
               class="py-[0.1rem] h-fit"
-              onClick={() => upload.remove()}
+              onClick={() => upload.cancel()}
             >
               Annuleren
             </Button>
@@ -126,12 +131,14 @@ function UploadDetails({ upload }: { upload: Upload }) {
           </div>
         </div>
 
-        <Card class="w-full">
-          <Skeleton
-            class="h-[2px] bg-foreground shadow-[0_0_10px_0px_white]  shadow-foreground"
-            style={`width: ${upload.progress() ?? 0}%`}
-          />
-        </Card>
+        <Show when={upload.status() == "uploading"}>
+          <Card class="w-full">
+            <Skeleton
+              class="h-[2px] bg-foreground shadow-[0_0_10px_0px_white]  shadow-foreground"
+              style={`width: ${upload.progress() ?? 0}%`}
+            />
+          </Card>
+        </Show>
       </Show>
     </div>
   );
@@ -171,6 +178,10 @@ function VideoSheet({ upload }: { upload: Upload }) {
             <TextField name="title" value={video.title()}></TextField>
           </TextFieldRoot>
           <Separator />
+          <p class="text-sm text-muted-foreground">
+            ChatGPT genereert een beschrijving op basis van de video
+            transcriptie.
+          </p>
           <Switch
             name="generateDescription"
             class="flex items-center space-x-2"
@@ -184,6 +195,7 @@ function VideoSheet({ upload }: { upload: Upload }) {
               Beschrijving genereren met ChatGPT
             </SwitchLabel>
           </Switch>
+
           <Show when={video.generateDescription()}>
             <TextFieldRoot>
               <TextFieldLabel>Hint voor ChatGPT</TextFieldLabel>
