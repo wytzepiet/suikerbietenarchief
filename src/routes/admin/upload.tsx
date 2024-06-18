@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { For, Show, createMemo, createSignal } from "solid-js";
 import {
@@ -10,21 +10,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  TextField,
-  TextFieldLabel,
-  TextFieldRoot,
-} from "@/components/ui/textfield";
-import {
-  Switch,
-  SwitchControl,
-  SwitchLabel,
-  SwitchThumb,
-} from "@/components/ui/switch";
+import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
+import { Switch, SwitchControl, SwitchLabel, SwitchThumb } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { TextArea } from "@/components/ui/textarea";
 import { action } from "@solidjs/router";
 import { Status, Upload, createUpload } from "@/libs/video/createUpload";
+import PageTitle, { pageTitle } from "@/components/pageTitle";
 
 export default function UploadVideos() {
   const [uploads, setUploads] = createSignal<Upload[]>([]);
@@ -52,31 +44,33 @@ export default function UploadVideos() {
   }
 
   return (
-    <div class="flex flex-col items-start gap-4">
-      <div class="flex justify-between">
-        <h1 class="text-2xl font-medium">Upload video's</h1>
-      </div>
+    <main>
+      <PageTitle>Upload video's</PageTitle>
+      <CardHeader>
+        <CardTitle class="text-2xl">{pageTitle()}</CardTitle>
+      </CardHeader>
+      <CardContent class="flex flex-col items-start gap-4">
+        <Card class="relative h-52 w-72 flex flex-col justify-center items-center gap-2">
+          <Button variant="secondary">Upload Videos</Button>
+          <p class="text-muted-foreground text-sm">of drop ze hier</p>
+          <input
+            type="file"
+            multiple
+            accept="video/*"
+            class="absolute inset-0 opacity-0 cursor-pointer"
+            onInput={(e) => createUploads(e.currentTarget.files)}
+          ></input>
+        </Card>
 
-      <Card class="relative h-52 w-72 flex flex-col justify-center items-center gap-2">
-        <Button variant="secondary">Upload Videos</Button>
-        <p class="text-muted-foreground text-sm">of drop ze hier</p>
-        <input
-          type="file"
-          multiple
-          accept="video/*"
-          class="absolute inset-0 opacity-0 cursor-pointer"
-          onInput={(e) => createUploads(e.currentTarget.files)}
-        ></input>
-      </Card>
+        <Button onClick={startUpload} disabled={!newUploads().length}>
+          Start upload
+        </Button>
 
-      <Button onClick={startUpload} disabled={!newUploads().length}>
-        Start upload
-      </Button>
-
-      <UploadList list={newUploads()} title="Nieuwe uploads" />
-      <UploadList list={busyUploads()} title="Bezig met uploaden" />
-      <UploadList list={doneUploads()} title="Klaar" />
-    </div>
+        <UploadList list={newUploads()} title="Nieuwe uploads" />
+        <UploadList list={busyUploads()} title="Bezig met uploaden" />
+        <UploadList list={doneUploads()} title="Klaar" />
+      </CardContent>
+    </main>
   );
 }
 
@@ -120,11 +114,7 @@ function UploadDetails({ upload }: { upload: Upload }) {
               <p>{upload.progress().toFixed(1)}%</p>
             </Show>
 
-            <Button
-              variant="outline"
-              class="py-[0.1rem] h-fit"
-              onClick={() => upload.cancel()}
-            >
+            <Button variant="outline" class="py-[0.1rem] h-fit" onClick={() => upload.cancel()}>
               Annuleren
             </Button>
             <VideoSheet upload={upload} />
@@ -167,9 +157,7 @@ function VideoSheet({ upload }: { upload: Upload }) {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Bewerk video</SheetTitle>
-          <SheetDescription>
-            Video wordt gepubliceerd wanneer de upload klaar is.
-          </SheetDescription>
+          <SheetDescription>Video wordt gepubliceerd wanneer de upload klaar is.</SheetDescription>
         </SheetHeader>
         <div class="h-8"></div>
         <form class="flex flex-col gap-8" action={saveVideo} method="post">
@@ -179,8 +167,7 @@ function VideoSheet({ upload }: { upload: Upload }) {
           </TextFieldRoot>
           <Separator />
           <p class="text-sm text-muted-foreground">
-            ChatGPT genereert een beschrijving op basis van de video
-            transcriptie.
+            ChatGPT genereert een beschrijving op basis van de video transcriptie.
           </p>
           <Switch
             name="generateDescription"
@@ -191,9 +178,7 @@ function VideoSheet({ upload }: { upload: Upload }) {
             <SwitchControl>
               <SwitchThumb />
             </SwitchControl>
-            <SwitchLabel class="text-sm">
-              Beschrijving genereren met ChatGPT
-            </SwitchLabel>
+            <SwitchLabel class="text-sm">Beschrijving genereren met ChatGPT</SwitchLabel>
           </Switch>
 
           <Show when={video.generateDescription()}>
@@ -208,11 +193,7 @@ function VideoSheet({ upload }: { upload: Upload }) {
               <TextArea name="description" value={upload.video.description} />
             </TextFieldRoot>
           </Show>
-          <Button
-            class="self-start"
-            type="submit"
-            onClick={() => setOpen(false)}
-          >
+          <Button class="self-start" type="submit" onClick={() => setOpen(false)}>
             Opslaan
           </Button>
         </form>

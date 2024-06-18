@@ -39,12 +39,12 @@ export const sheetVariants = cva(
           "inset-x-0 bottom-0 border-t data-[closed]:slide-out-to-bottom data-[expanded]:slide-in-from-bottom",
         left: "inset-y-0 left-0 h-full w-3/4 border-r data-[closed]:slide-out-to-left data-[expanded]:slide-in-from-left sm:max-w-sm",
         right:
-          "inset-y-0 right-0 h-full w-3/4 border-l data-[closed]:slide-out-to-right data-[expanded]:slide-in-from-right sm:max-w-sm"
-      }
+          "inset-y-0 right-0 h-full w-3/4 border-l data-[closed]:slide-out-to-right data-[expanded]:slide-in-from-right sm:max-w-sm",
+      },
     },
     defaultVariants: {
-      side: "right"
-    }
+      side: "right",
+    },
   }
 );
 
@@ -70,7 +70,11 @@ export const SheetContent = <T extends ValidComponent = "div">(
       >
         {local.children}
         <DialogPrimitive.CloseButton class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-[opacity,box-shadow] hover:opacity-100 focus:outline-none focus:ring-[1.5px] focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="h-4 w-4"
+          >
             <path
               fill="none"
               stroke="currentColor"
@@ -125,7 +129,13 @@ export const SheetHeader = (props: ComponentProps<"div">) => {
   const [local, rest] = splitProps(props, ["class"]);
 
   return (
-    <div class={cn("flex flex-col space-y-2 text-center sm:text-left", local.class)} {...rest} />
+    <div
+      class={cn(
+        "flex flex-col space-y-2 text-center sm:text-left",
+        local.class
+      )}
+      {...rest}
+    />
   );
 };
 
@@ -134,7 +144,10 @@ export const SheetFooter = (props: ComponentProps<"div">) => {
 
   return (
     <div
-      class={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", local.class)}
+      class={cn(
+        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+        local.class
+      )}
       {...rest}
     />
   );

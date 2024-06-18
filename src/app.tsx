@@ -3,6 +3,7 @@ import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
 import "./app.css";
+import { ConfirmDialog } from "./components/confirmDialog";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
             <a href="/">Index</a>
             <a href="/test">About</a>
           </nav>
+          <ConfirmDialog />
           <Suspense>{props.children}</Suspense>
         </MetaProvider>
       )}

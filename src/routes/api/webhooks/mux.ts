@@ -1,6 +1,6 @@
 "use server";
 
-import { mux } from "@/libs/mux/client";
+import { mux } from "@/libs/mux/server";
 import { supabase } from "@/libs/supabase/server";
 import { APIEvent } from "node_modules/@solidjs/start/dist/server";
 import { getRequestURL } from "vinxi/http";
