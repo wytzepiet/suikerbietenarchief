@@ -1,7 +1,5 @@
 import { cn } from "@/libs/cn";
-import { mux } from "@/libs/mux/server";
 import "@mux/mux-player";
-import { createResource } from "solid-js";
 
 interface MuxPlayerProps {
   playbackId: string;
@@ -9,30 +7,29 @@ interface MuxPlayerProps {
   style?: string;
   autoplay?: boolean;
   muted?: boolean;
+  aspectRatio?: string | null;
 }
 
 export default function MuxPlayer(props: MuxPlayerProps) {
   if (props.autoplay) props.muted = true;
+  const aspectRatio = props.aspectRatio?.replace(":", " / ");
 
   return (
-    <>
-      <div class={cn("relative", props.class)}>
-        <img
-          class="w-full opacity-0"
-          src={`https://image.mux.com/${props.playbackId}/thumbnail.webp`}
-          alt="Video thumbnail"
-        />
-        {/* @ts-ignore */}
-        <mux-player
-          class={"absolute inset-0"}
-          playback-id={props.playbackId}
-          autoplay={props.autoplay}
-          loop={props.autoplay}
-          muted={props.muted}
-          style={props.style}
-        />
-      </div>
-    </>
+    <div
+      class={cn("relative", props.class)}
+      style={aspectRatio ? `aspect-ratio: ${aspectRatio}` : ""}
+    >
+      {/* @ts-ignore */}
+      <mux-player
+        class={"absolute inset-0"}
+        playback-id={props.playbackId}
+        autoplay={props.autoplay}
+        loop={props.autoplay}
+        muted={props.muted}
+        style={props.style}
+        aspectRatio={props.aspectRatio}
+      />
+    </div>
   );
 }
 // o01EPwa914Z4SnGt2E527dU02L5gL69Pb25yvHI9R7cCA

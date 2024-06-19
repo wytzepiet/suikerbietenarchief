@@ -2,8 +2,8 @@
 
 import { mux } from "@/libs/mux/server";
 import { supabase } from "@/libs/supabase/server";
+import { transcribe } from "@/libs/assemblyai/utils";
 import { APIEvent } from "node_modules/@solidjs/start/dist/server";
-import { getRequestURL } from "vinxi/http";
 
 function oopsie(message: string, status: number) {
   console.error(message);
@@ -59,6 +59,13 @@ export async function POST({ request }: APIEvent) {
             title: upload.title,
             description: upload.description,
             status: hook.data.status,
+            playback_id: hook.data.playback_ids?.at(0)?.id,
+            aspect_ratio: hook.data.aspect_ratio,
+            duration: hook.data.duration,
+            generate_description: upload.generate_description,
+            prompt_hint: upload.prompt_hint,
+            user_id: upload.user_id,
+            upload_id: upload.id.toString(),
           },
         ]);
 
@@ -68,7 +75,10 @@ export async function POST({ request }: APIEvent) {
       return new Response("OK", { status: 200 });
     }
     if (hook.type === "video.asset.static_renditions.ready") {
-      const asset_id = hook.data.id;
+      hook.data.playback_ids?.forEach(({id}) => {
+        console.log('transcribing. playback_id: ', id);
+        transcribe(id);
+      });
     }
 
     return new Response("OK", { status: 200 });

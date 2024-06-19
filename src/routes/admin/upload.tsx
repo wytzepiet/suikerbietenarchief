@@ -10,8 +10,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
-import { Switch, SwitchControl, SwitchLabel, SwitchThumb } from "@/components/ui/switch";
+import {
+  TextField,
+  TextFieldLabel,
+  TextFieldRoot,
+} from "@/components/ui/textfield";
+import {
+  Switch,
+  SwitchControl,
+  SwitchLabel,
+  SwitchThumb,
+} from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { TextArea } from "@/components/ui/textarea";
 import { action } from "@solidjs/router";
@@ -21,7 +30,8 @@ import PageTitle, { pageTitle } from "@/components/pageTitle";
 export default function UploadVideos() {
   const [uploads, setUploads] = createSignal<Upload[]>([]);
 
-  const filterUploads = (s: Status) => uploads().filter((u) => u.status() == s);
+  const filterUploads = (s: Status) =>
+    uploads().filter((u) => u.state.status == s);
   const newUploads = createMemo(() => filterUploads("idle"));
   const busyUploads = createMemo(() => filterUploads("uploading"));
   const doneUploads = createMemo(() => filterUploads("done"));
@@ -94,38 +104,42 @@ function UploadDetails({ upload }: { upload: Upload }) {
 
   return (
     <div class="w-[400px] mb-6">
-      <p>{upload.video.title()}</p>
+      <p>{upload.data.title}</p>
 
-      <Show when={upload.error()}>
-        <p class="text-red-400">{upload.error()}</p>
+      <Show when={upload.state.error}>
+        <p class="text-red-400">{upload.state.error}</p>
       </Show>
 
-      <Show when={!upload.error()}>
+      <Show when={!upload.state.error}>
         <div class="flex justify-between text-muted-foreground text-sm mb-2">
           <p>{bytesToSize(upload.file.size)}</p>
           <div class="flex gap-2 items-center">
-            <Show when={upload.status() == "done"}>
+            <Show when={upload.state.status == "done"}>
               <p>Klaar!</p>
             </Show>
-            <Show when={upload.status() == "cancelled"}>
+            <Show when={upload.state.status == "cancelled"}>
               <p>Geannulleerd</p>
             </Show>
-            <Show when={upload.status() == "uploading"}>
-              <p>{upload.progress().toFixed(1)}%</p>
+            <Show when={upload.state.status == "uploading"}>
+              <p>{upload.state.progress.toFixed(1)}%</p>
             </Show>
 
-            <Button variant="outline" class="py-[0.1rem] h-fit" onClick={() => upload.cancel()}>
+            <Button
+              variant="outline"
+              class="py-[0.1rem] h-fit"
+              onClick={() => upload.cancel()}
+            >
               Annuleren
             </Button>
             <VideoSheet upload={upload} />
           </div>
         </div>
 
-        <Show when={upload.status() == "uploading"}>
+        <Show when={upload.state.status == "uploading"}>
           <Card class="w-full">
             <Skeleton
               class="h-[2px] bg-foreground shadow-[0_0_10px_0px_white]  shadow-foreground"
-              style={`width: ${upload.progress() ?? 0}%`}
+              style={`width: ${upload.state.progress ?? 0}%`}
             />
           </Card>
         </Show>
@@ -135,17 +149,16 @@ function UploadDetails({ upload }: { upload: Upload }) {
 }
 
 function VideoSheet({ upload }: { upload: Upload }) {
-  const video = upload.video;
   const [open, setOpen] = createSignal(false);
 
   const saveVideo = action(async (data: FormData) => {
     if (!data.get("title")) return;
 
-    video.setTitle(String(data.get("title")));
-    video.description = String(data.get("description"));
-    video.hint = String(data.get("hint"));
+    upload.setData("title", String(data.get("title")));
+    upload.setData("description", String(data.get("description")));
+    upload.setData("prompt_hint", String(data.get("hint")));
 
-    video.save();
+    upload.save();
     setOpen(false);
   });
 
@@ -157,43 +170,55 @@ function VideoSheet({ upload }: { upload: Upload }) {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Bewerk video</SheetTitle>
-          <SheetDescription>Video wordt gepubliceerd wanneer de upload klaar is.</SheetDescription>
+          <SheetDescription>
+            Video wordt gepubliceerd wanneer de upload klaar is.
+          </SheetDescription>
         </SheetHeader>
         <div class="h-8"></div>
         <form class="flex flex-col gap-8" action={saveVideo} method="post">
           <TextFieldRoot>
             <TextFieldLabel>Titel</TextFieldLabel>
-            <TextField name="title" value={video.title()}></TextField>
+            <TextField name="title" value={upload.data.title ?? ""}></TextField>
           </TextFieldRoot>
           <Separator />
           <p class="text-sm text-muted-foreground">
-            ChatGPT genereert een beschrijving op basis van de video transcriptie.
+            ChatGPT genereert een beschrijving op basis van de video
+            transcriptie.
           </p>
           <Switch
             name="generateDescription"
             class="flex items-center space-x-2"
-            checked={video.generateDescription()}
-            onChange={(val) => video.setGenerateDescription(val)}
+            checked={upload.data.generate_description ?? true}
+            onChange={(val) => upload.setData("generate_description", val)}
           >
             <SwitchControl>
               <SwitchThumb />
             </SwitchControl>
-            <SwitchLabel class="text-sm">Beschrijving genereren met ChatGPT</SwitchLabel>
+            <SwitchLabel class="text-sm">
+              Beschrijving genereren met ChatGPT
+            </SwitchLabel>
           </Switch>
 
-          <Show when={video.generateDescription()}>
+          <Show when={upload.data.generate_description}>
             <TextFieldRoot>
               <TextFieldLabel>Hint voor ChatGPT</TextFieldLabel>
-              <TextArea name="hint" value={upload.video.hint} />
+              <TextArea name="hint" value={upload.data.prompt_hint ?? ""} />
             </TextFieldRoot>
           </Show>
-          <Show when={!video.generateDescription()}>
+          <Show when={!upload.data.generate_description}>
             <TextFieldRoot>
               <TextFieldLabel>Beschrijving</TextFieldLabel>
-              <TextArea name="description" value={upload.video.description} />
+              <TextArea
+                name="description"
+                value={upload.data.description ?? ""}
+              />
             </TextFieldRoot>
           </Show>
-          <Button class="self-start" type="submit" onClick={() => setOpen(false)}>
+          <Button
+            class="self-start"
+            type="submit"
+            onClick={() => setOpen(false)}
+          >
             Opslaan
           </Button>
         </form>

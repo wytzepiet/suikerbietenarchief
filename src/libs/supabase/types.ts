@@ -44,9 +44,11 @@ export type Database = {
       }
       videos: {
         Row: {
+          aspect_ratio: string | null
           asset_id: string | null
           created_at: string
           description: string | null
+          duration: number | null
           generate_description: boolean | null
           id: number
           keywords: string[] | null
@@ -60,9 +62,11 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          aspect_ratio?: string | null
           asset_id?: string | null
           created_at?: string
           description?: string | null
+          duration?: number | null
           generate_description?: boolean | null
           id?: number
           keywords?: string[] | null
@@ -76,9 +80,11 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          aspect_ratio?: string | null
           asset_id?: string | null
           created_at?: string
           description?: string | null
+          duration?: number | null
           generate_description?: boolean | null
           id?: number
           keywords?: string[] | null

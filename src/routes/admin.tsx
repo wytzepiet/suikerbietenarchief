@@ -6,6 +6,7 @@ import { A, RouteSectionProps, useNavigate } from "@solidjs/router";
 import { Calendar, Images, LayoutDashboard, User, Video } from "lucide-solid";
 import { onMount } from "solid-js";
 import { setUser, user } from "@/libs/supabase/user";
+import { cn } from "@/libs/cn";
 
 const menu = [
   {
@@ -54,11 +55,12 @@ export default function Admin(props: RouteSectionProps) {
               <div class="sticky top-2 flex flex-col gap-2">
                 {menu.map((item) => {
                   const current = props.location.pathname === item.href;
+                  const currentClass = current ? "bg-secondary" : "";
                   return (
                     <A href={item.href} class="block w-full">
                       <Button
                         variant={current ? "secondary" : "ghost"}
-                        class="w-full justify-start font-normal flex gap-2"
+                        class={cn(currentClass, "w-full justify-start font-normal flex gap-2")}
                       >
                         <item.icon strokeWidth={1.5} size="1.5em" />
                         {item.title}

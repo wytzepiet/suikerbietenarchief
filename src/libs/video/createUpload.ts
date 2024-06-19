@@ -2,120 +2,96 @@ import { createSignal, onCleanup } from "solid-js";
 import { supabase } from "../supabase/client";
 import { Upload as MuxUpload } from "@mux/mux-node/resources/video/uploads.mjs";
 import { UpChunk } from "@mux/upchunk";
-import { user } from "../supabase/user";
+import { createStore } from "solid-js/store";
+import { Tables } from "../supabase/types";
 
 export type Status = "idle" | "uploading" | "done" | "error" | "cancelled";
 export type Upload = ReturnType<typeof createUpload>;
 
+
 export function createUpload(file: File) {
-  const [error, setError] = createSignal("");
-  const [progress, setProgress] = createSignal(0);
-  const [status, setStatus] = createSignal<Status>("idle");
 
-  /** A list of functions to call when the upload is removed */
-  const onCancel: (() => void)[] = [];
-
-  /** Cancel and remove the upload */
-  const cancel = () => onCancel.forEach((fn) => fn());
-
-  const [title, setTitle] = createSignal(file.name);
-  // Whether to generate a description from the video using ChatGPT
-  const [generateDescription, setGenerateDescription] = createSignal(true);
-
-  let recordId = 0;
-  /** Save the video to the database */
-  async function save() {
-    const record = () => ({
-      title: video.title(),
-      generate_description: video.generateDescription(),
-      description: video.description,
-      prompt_hint: video.hint,
-      upload_id: video.uploadId,
-      user_id: user()?.id,
+    const [state, setState] = createStore({
+      error: "",
+      progress: 0,
+      status: "idle" as Status,
+    });
+    const [data, setData ] = createStore<Partial<Tables<'uploads'>>>({
+      title: file.name
     });
 
-    if (recordId) {
-      const { error } = await supabase()
-        .from("uploads")
-        .upsert({
-          id: recordId,
-          ...record(),
+      /** A list of functions to call when the upload is removed */
+      const onCancel: (() => void)[] = [];
+     
+      const cancel = () => onCancel.forEach((fn) => fn());
+
+
+    async function start() {
+      if (state.progress) return;
+  
+      const token = (await supabase().auth.getSession()).data.session
+        ?.access_token;
+  
+      fetch(`/api/video/getmuxuploadurl?token=${token}`).then(async (r) => {
+        const {data, error} = (await r.json()) as {
+          error?: string;
+          data?: MuxUpload;
+        };
+  
+        if (error) return setState("error", error);
+        if (!data?.url) return setState("error", "No upload URL");
+  
+        const upChunk = UpChunk.createUpload({
+          endpoint: data.url,
+          file: file,
+          chunkSize: 5120, // Uploads the file in ~5mb chunks
         });
-      if (error) return setError(error.message);
-    } else {
-      const { data, error } = await supabase()
-        .from("uploads")
-        .insert(record())
-        .select("id");
-      if (error) return setError(error.message);
-      recordId = data[0].id;
+        upChunk.on("error", (err) => setState("error", err.detail));
+        upChunk.on("progress", (prog) => setState("progress", prog.detail));
+        upChunk.on("success", () => setState("status", "done"));
+        onCancel.unshift(() => upChunk.abort());
+  
+      upload.setData('upload_id', data.id);
+       onCancel.unshift(async () => {
+          const uploads = supabase().from("uploads");
+           uploads.delete().eq("upload_id", data!.id).select();
+        });
+  
+        if (state.status !== "uploading") setState('status',"uploading");
+  
+        save();
+      });
     }
-  }
 
-  /** start the upload process */
-  async function start() {
-    if (progress()) return;
+    async function save() {
 
-    const token = (await supabase().auth.getSession()).data.session
-      ?.access_token;
 
-    fetch(`/api/video/getmuxuploadurl?token=${token}`).then(async (res) => {
-      const { error, data } = (await res.json()) as {
-        error?: string;
-        data?: MuxUpload;
-      };
+      if (upload.data.id) {
+        const { error } = await supabase()
+          .from("uploads")
+          .upsert( upload.data);
+        if (error) return setState("error", error.message);
+      } else {
+        const { data, error } = await supabase()
+          .from("uploads")
+          .insert(upload.data)
+          .select("id");
+        if (error) return setState('error', error.message);
+        upload.data.id = data[0].id;
+      }
+    }
 
-      if (error) return setError(error);
-      if (!data?.url) return setError("No upload URL");
-
-      const upChunk = UpChunk.createUpload({
-        endpoint: data.url,
-        file: file,
-        chunkSize: 5120, // Uploads the file in ~5mb chunks
-      });
-      upChunk.on("error", (err) => setError(err.detail));
-      upChunk.on("progress", (prog) => setProgress(prog.detail));
-      upChunk.on("success", () => setStatus("done"));
-      onCancel.push(() => upChunk.abort());
-
-      video.uploadId = data.id;
-      onCancel.push(async () => {
-        const uploads = supabase().from("uploads");
-        const res = await uploads.delete().eq("upload_id", data.id).select();
-        console.log(user()?.id);
-        console.log(data.id);
-        console.log(res);
-      });
-
-      if (status() !== "uploading") setStatus("uploading");
-
-      save();
-    });
-  }
-
-  const video = {
-    title,
-    setTitle,
-    generateDescription,
-    setGenerateDescription,
-    hint: "",
-    description: "",
-    save,
-    uploadId: "",
-  };
-
-  const upload = {
-    file,
-    video,
-    start,
-    cancel,
-    onCancel: onCancel,
-    error,
-    setError,
-    progress,
-    setProgress,
-    status,
-    setStatus,
+  const upload = { 
+    file, 
+    data, 
+    setData, 
+    state, 
+    setState,
+    start, 
+    cancel, 
+    onCancel, 
+    save, 
+   
   };
 
   return upload;

@@ -69,12 +69,22 @@ module.exports = {
           from: { height: "var(--kb-collapsible-content-height)" },
           to: { height: 0 },
         },
+        "fade-in": {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        pulse: {
+          "0%, 100%": { opacity: 0.5 },
+          "50%": { opacity: 1 },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "collapsible-down": "collapsible-down 0.2s ease-out",
         "collapsible-up": "collapsible-up 0.2s ease-out",
+        pulse:
+          "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) 1s infinite, fade-in 1s backwards",
       },
       fontSize: {
         sm: "0.8rem",
