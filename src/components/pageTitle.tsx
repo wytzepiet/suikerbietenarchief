@@ -1,11 +1,20 @@
 import { Title } from "@solidjs/meta";
-import { createSignal } from "solid-js";
+import { Accessor, Setter, createRoot, createSignal } from "solid-js";
 
 interface Props {
   children: string;
 }
 
-export let [pageTitle, setPageTitle] = createSignal("Suikerbietenarchief");
+let disposer: () => void;
+let pageTitle: Accessor<string>;
+let setPageTitle: Setter<string>;
+
+createRoot((dispose) => {
+  [pageTitle, setPageTitle] = createSignal("Suikerbietenarchief");
+  disposer = dispose;
+});
+
+export { pageTitle, setPageTitle, disposer };
 
 export default function PageTitle(props: Props) {
   setPageTitle(props.children);

@@ -50,7 +50,7 @@ import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
 //   "use server";
 //   const muxVideos = await mux.video.assets.list();
 //   if (!muxVideos) return;
-//   const vids = supabase().from("videos");
+//   const vids = .from("videos");
 
 //   muxVideos.data.forEach(async (muxVideo) => {
 //     const { data, error } = await vids.select().eq("asset_id", muxVideo.id);
@@ -70,7 +70,7 @@ import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
 
 export default function Videos() {
   const [videos, { refetch, mutate }] = createResource(async () => {
-    const vids = await supabase().from("videos").select().neq("asset_id", null);
+    const vids = await supabase.from("videos").select().neq("asset_id", null);
     return vids.data?.map((video) => {
       const vid = new VideoRecord(video);
       vid.onDelete.push(() => {
@@ -156,7 +156,7 @@ function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
 
     console.log(video.data.id);
 
-    const vid = await supabase()
+    const vid = await supabase
       .from("videos")
       .update(video.data)
       .eq("id", video.data.id!)
@@ -202,7 +202,7 @@ function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
     //   transcript.text
     // );
     // if (metadata) {
-    //   supabase().from("videos").update(metadata).eq("id", video.id);
+    //   .from("videos").update(metadata).eq("id", video.id);
     // }
   })({ ...video.data });
 
@@ -250,7 +250,6 @@ function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
               onInput={handleChange}
             ></TextField>
           </TextFieldRoot>
-          <Separator />
 
           <TextFieldRoot>
             <TextFieldLabel class="flex justify-between items-end">

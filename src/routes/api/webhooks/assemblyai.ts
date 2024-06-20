@@ -16,7 +16,7 @@ export async function POST({ request }: APIEvent) {
     console.log("Received AssemblyAI webhook:", { playbackId, transcriptId });
     console.log(json);
 
-    const { data, error } = await supabase()
+    const { data, error } = await 
       .from("videos")
       .update({ transcript_id: transcriptId })
       .eq("playback_id", playbackId)
@@ -45,7 +45,7 @@ export async function POST({ request }: APIEvent) {
       transcript.text
     );
     if (metadata) {
-      await supabase().from("videos").update(metadata).eq("id", data.id);
+      await .from("videos").update(metadata).eq("id", data.id);
     }
 
     return json({ message: "Webhook received successfully" }, { status: 200 });

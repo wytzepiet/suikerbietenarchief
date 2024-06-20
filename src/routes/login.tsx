@@ -23,18 +23,16 @@ export default function Login() {
 
   const [error, setError] = createSignal("");
 
-  supabase()
-    .auth.getSession()
-    .then(({ data }) => {
-      if (data.session?.user) {
-        setUser(data.session.user);
-        navigate("/admin");
-      }
-    });
+  supabase.auth.getSession().then(({ data }) => {
+    if (data.session?.user) {
+      setUser(data.session.user);
+      navigate("/admin");
+    }
+  });
 
   const signIn = action(async (formData: FormData) => {
     console.log(email, password);
-    const { error, data } = await supabase().auth.signInWithPassword({
+    const { error, data } = await supabase.auth.signInWithPassword({
       email: String(formData.get("email")),
       password: String(formData.get("password")),
     });

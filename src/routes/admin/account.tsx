@@ -14,7 +14,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { AlertDialogTriggerProps } from "@kobalte/core/alert-dialog";
-import { TextField, TextFieldLabel, TextFieldRoot } from "@/components/ui/textfield";
+import {
+  TextField,
+  TextFieldLabel,
+  TextFieldRoot,
+} from "@/components/ui/textfield";
 import { supabase } from "@/libs/supabase/client";
 import { LogOut } from "lucide-solid";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,26 +28,26 @@ const updateEmail = action(async (formData: FormData) => {
   if (!formData.has("email")) return;
   const email = String(formData.get("email"));
   if (!email) return;
-  await supabase().auth.updateUser({ email });
+  await supabase.auth.updateUser({ email });
 });
 
 async function updatePassword() {
   if (!user()?.email) return;
-  await supabase().auth.resetPasswordForEmail(user()?.email!);
+  await supabase.auth.resetPasswordForEmail(user()?.email!);
 }
 
 export default function Account() {
   const navigate = useNavigate();
 
   async function deleteUser() {
-    const { data } = await supabase().auth.getSession();
+    const { data } = await supabase.auth.getSession();
     if (!data.session?.user.id) return;
-    await supabase().auth.admin.deleteUser(data.session?.user.id!);
+    await supabase.auth.admin.deleteUser(data.session?.user.id!);
     navigate("/");
   }
 
   async function signOut() {
-    await supabase().auth.signOut();
+    await supabase.auth.signOut();
     navigate("/login");
   }
 
@@ -66,7 +70,11 @@ export default function Account() {
               )}
             />
             <AlertDialogContent>
-              <form class="flex flex-col gap-4" action={updateEmail} method="post">
+              <form
+                class="flex flex-col gap-4"
+                action={updateEmail}
+                method="post"
+              >
                 <AlertDialogHeader>
                   <AlertDialogTitle>Email wijzigen</AlertDialogTitle>
                   <AlertDialogDescription>
@@ -80,7 +88,9 @@ export default function Account() {
                 </TextFieldRoot>
                 <AlertDialogFooter>
                   <AlertDialogClose>Annuleren</AlertDialogClose>
-                  <AlertDialogAction type="submit">Stuur link</AlertDialogAction>
+                  <AlertDialogAction type="submit">
+                    Stuur link
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </form>
             </AlertDialogContent>
@@ -99,13 +109,15 @@ export default function Account() {
                 <AlertDialogTitle>Wachtwoord wijzigen</AlertDialogTitle>
                 <AlertDialogDescription>
                   Er wordt een link gestuurd naar{" "}
-                  <span class="text-foreground">{user()?.email}</span> om het wachtwoord te
-                  wijzigen.
+                  <span class="text-foreground">{user()?.email}</span> om het
+                  wachtwoord te wijzigen.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogClose>Annuleren</AlertDialogClose>
-                <AlertDialogAction onClick={updatePassword}>Stuur link</AlertDialogAction>
+                <AlertDialogAction onClick={updatePassword}>
+                  Stuur link
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -117,7 +129,11 @@ export default function Account() {
           <AlertDialog>
             <AlertDialogTrigger
               as={(props: AlertDialogTriggerProps) => (
-                <Button variant="outline" class="flex items-center gap-2" {...props}>
+                <Button
+                  variant="outline"
+                  class="flex items-center gap-2"
+                  {...props}
+                >
                   <LogOut size="1.2em" strokeWidth={3} />
                   Uitloggen
                 </Button>
@@ -126,11 +142,15 @@ export default function Account() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Uitloggen</AlertDialogTitle>
-                <AlertDialogDescription>Weet je het zeker?</AlertDialogDescription>
+                <AlertDialogDescription>
+                  Weet je het zeker?
+                </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogClose>Nee, annuleren</AlertDialogClose>
-                <AlertDialogAction onclick={signOut}>Ja, log uit</AlertDialogAction>
+                <AlertDialogAction onclick={signOut}>
+                  Ja, log uit
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

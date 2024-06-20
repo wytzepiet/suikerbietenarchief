@@ -39,8 +39,7 @@ export class Upload {
   async start() {
     if (this.state.progress) return;
 
-    const token = (await supabase().auth.getSession()).data.session
-      ?.access_token;
+    const token = (await supabase.auth.getSession()).data.session?.access_token;
 
     fetch(`/api/video/getmuxuploadurl?token=${token}`).then(async (r) => {
       const { data, error } = (await r.json()) as {
@@ -65,7 +64,7 @@ export class Upload {
 
       this.setData("upload_id", data.id);
       this.onCancel.unshift(async () => {
-        const uploads = supabase().from("uploads");
+        const uploads = supabase.from("uploads");
         uploads.delete().eq("upload_id", data!.id).select();
       });
 
@@ -78,17 +77,20 @@ export class Upload {
 
   async save() {
     if (this.data.id) {
-      const { error } = await supabase()
+      const { error } = await supabase
         .from("uploads")
         .update(this.data)
         .eq("id", this.data.id);
       if (error) return this.setState("error", error.message);
     } else {
-      const { data, error } = await supabase()
+      const { data, error } = await supabase
         .from("uploads")
         .insert(this.data)
         .select("id");
-      if (error) return this.setState("error", error.message);
+      if (error) {
+        console.error(error);
+        return this.setState("error", error.message);
+      }
       this.data.id = data[0].id;
     }
   }

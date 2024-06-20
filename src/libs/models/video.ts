@@ -14,7 +14,7 @@ export class VideoRecord<T extends VideoData> {
   }
 
   async save() {
-    const { data, error } = await supabase().from("videos").upsert(this.data);
+    const { data, error } = await supabase.from("videos").upsert(this.data);
     if (error) console.error(error);
     if (data) this.setData(data[0]);
   }
@@ -23,7 +23,7 @@ export class VideoRecord<T extends VideoData> {
 
   async delete() {
     if (this.data.id)
-      await supabase().from("videos").delete().eq("id", this.data.id);
+      await supabase.from("videos").delete().eq("id", this.data.id);
     if (this.data.asset_id) await deleteMuxVideo(this.data.asset_id);
     this.onDelete.forEach((fn) => fn());
   }

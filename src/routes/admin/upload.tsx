@@ -141,7 +141,7 @@ function UploadDetails({ upload }: { upload: Upload }) {
               style={`width: ${upload.state.progress}%;`}
             >
               <div
-                class="absolute inset-0 rounded animate-gradient-pulse"
+                class="absolute inset-[-1px] blur-[1px] rounded animate-gradient-pulse"
                 style="background: linear-gradient(to right, transparent 25%, white 65%, transparent 75%); background-size: 400% 400%;"
               ></div>
             </div>
@@ -234,4 +234,8 @@ function VideoSheet({ upload }: { upload: Upload }) {
       </SheetContent>
     </Sheet>
   );
+}
+
+function TestComponent() {
+  return;
 }

@@ -39,7 +39,7 @@ export default function Admin(props: RouteSectionProps) {
   const navigate = useNavigate();
 
   onMount(async () => {
-    const { data, error } = await supabase().auth.getSession();
+    const { data, error } = await supabase.auth.getSession();
     if (!data.session?.user) navigate("/login");
     setUser(data.session?.user);
   });
