@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { For, Show, createMemo, createSignal } from "solid-js";
+import { For, Show, createEffect, createMemo, createSignal } from "solid-js";
 import {
   Sheet,
   SheetContent,
@@ -76,9 +75,9 @@ export default function UploadVideos() {
           Start upload
         </Button>
 
-        <UploadList list={newUploads()} title="Nieuwe uploads" />
-        <UploadList list={busyUploads()} title="Bezig met uploaden" />
-        <UploadList list={doneUploads()} title="Klaar" />
+        <UploadList list={uploads()} title="Nieuwe uploads" />
+        {/* <UploadList list={busyUploads()} title="Bezig met uploaden" /> */}
+        {/* <UploadList list={doneUploads()} title="Klaar" /> */}
       </CardContent>
     </main>
   );

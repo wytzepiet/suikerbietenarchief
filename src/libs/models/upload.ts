@@ -2,7 +2,7 @@ import { createSignal, onCleanup } from "solid-js";
 import { supabase } from "../supabase/client";
 import { Upload as MuxUpload } from "@mux/mux-node/resources/video/uploads.mjs";
 import { UpChunk } from "@mux/upchunk";
-import { createStore } from "solid-js/store";
+import { SetStoreFunction, createStore } from "solid-js/store";
 import { Tables } from "../supabase/types";
 
 export type Status = "idle" | "uploading" | "done" | "error" | "cancelled";
@@ -17,22 +17,23 @@ const defaultState = {
 export class Upload {
   file: File;
 
-  private stateStore = createStore(defaultState);
-  state = this.stateStore[0];
-  setState = this.stateStore[1];
+  state: typeof defaultState;
+  setState: SetStoreFunction<typeof defaultState>;
 
-  private dataStore = createStore<Partial<Tables<"uploads">>>({
-    generate_description: true,
-  });
-  data = this.dataStore[0];
-  setData = this.dataStore[1];
+  data: Partial<Tables<"uploads">>;
+  setData: SetStoreFunction<Partial<Tables<"uploads">>>;
 
   onCancel: (() => void)[] = [];
   cancel = () => this.onCancel.forEach((fn) => fn());
 
   constructor(file: File) {
+    [this.state, this.setState] = createStore({ ...defaultState });
+    [this.data, this.setData] = createStore<Partial<Tables<"uploads">>>({
+      generate_description: true,
+      title: file.name,
+    });
+
     this.file = file;
-    this.setData("title", file.name);
   }
 
   async start() {
@@ -56,7 +57,9 @@ export class Upload {
         chunkSize: 5120, // Uploads the file in ~5mb chunks
       });
       upChunk.on("error", (err) => this.setState("error", err.detail));
-      upChunk.on("progress", (prog) => this.setState("progress", prog.detail));
+      upChunk.on("progress", (prog) => {
+        this.setState("progress", prog.detail);
+      });
       upChunk.on("success", () => this.setState("status", "done"));
       this.onCancel.unshift(() => upChunk.abort());
 
