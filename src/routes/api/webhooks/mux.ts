@@ -38,7 +38,7 @@ export async function POST({ request }: APIEvent) {
           "Upload not found in database. upload_id= " + hook.data.upload_id,
           404
         );
-      } 
+      }
 
       const video = await supabase()
         .from("videos")
@@ -53,27 +53,30 @@ export async function POST({ request }: APIEvent) {
       const { data, error } = await supabase()
         .from("videos")
         .insert({
-            asset_id: hook.data.id,
-            title: upload.title,
-            description: upload.description,
-            status: hook.data.status,
-            playback_id: hook.data.playback_ids?.at(0)?.id,
-            generate_description: upload.generate_description,
-            prompt_hint: upload.prompt_hint,
-            created_by: upload.user_id,
-            edited_by: upload.user_id,
-            upload: upload.id,
-          });
+          asset_id: hook.data.id,
+          title: upload.title,
+          description: upload.description,
+          status: hook.data.status,
+          playback_id: hook.data.playback_ids?.at(0)?.id,
+          generate_description: upload.generate_description,
+          prompt_hint: upload.prompt_hint,
+          created_by: upload.user_id,
+          edited_by: upload.user_id,
+          upload: upload.id,
+        });
 
       if (error) {
-        return oopsie("Error inserting video into database: " + error.message, 500);
+        return oopsie(
+          "Error inserting video into database: " + error.message,
+          500
+        );
       }
       return new Response("OK", { status: 200 });
     }
-    if(hook.type === "video.asset.ready") {
+    if (hook.type === "video.asset.ready") {
       const { data, error } = await supabase()
         .from("videos")
-        .update({ 
+        .update({
           status: hook.data.status,
           playback_id: hook.data.playback_ids?.at(0)?.id,
           aspect_ratio: hook.data.aspect_ratio,
@@ -83,12 +86,15 @@ export async function POST({ request }: APIEvent) {
         .select();
 
       if (error) {
-        return oopsie("Error updating video status in database: " + error.message, 500);
+        return oopsie(
+          "Error updating video status in database: " + error.message,
+          500
+        );
       }
     }
     if (hook.type === "video.asset.static_renditions.ready") {
       const playbackId = hook.data.playback_ids?.at(0)?.id;
-      if(playbackId) transcribe(playbackId);
+      if (playbackId) transcribe(playbackId);
     }
 
     return new Response("OK", { status: 200 });

@@ -4,11 +4,10 @@ import { mux } from "@/libs/mux/server";
 import { supabase } from "../supabase/server";
 
 export function getVideoInfo(assetId: string | null) {
-    if (!assetId) return null;
+  if (!assetId) return null;
   return mux.video.assets.retrieve(assetId);
 }
 
-
 export async function deleteMuxVideo(assetId: string) {
-    return await mux.video.assets.delete(assetId);
+  return await mux.video.assets.delete(assetId);
 }

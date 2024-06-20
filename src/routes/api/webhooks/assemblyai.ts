@@ -16,29 +16,35 @@ export async function POST({ request }: APIEvent) {
     console.log("Received AssemblyAI webhook:", { playbackId, transcriptId });
     console.log(json);
 
-    const {data, error} = await supabase()
+    const { data, error } = await supabase()
       .from("videos")
       .update({ transcript_id: transcriptId })
-      .eq("playback_id", playbackId).select().single();
-      
+      .eq("playback_id", playbackId)
+      .select()
+      .single();
+
     if (error) {
       console.error("Error updating video document:", error);
       return json({ error: error.message }, { status: 500 });
     }
 
-    if(!data.generate_description) return;
+    if (!data.generate_description) return;
 
     const transcript = await getTranscript(transcriptId);
-    
+
     console.log("Transcript text:", transcript.text);
 
-    if(!transcript.text) {
+    if (!transcript.text) {
       console.error("Error fetching transcript text for video:", data.title);
       return json({ error: "Error fetching transcript text" }, { status: 500 });
     }
 
-    const metadata = await generateMetadata(data.title, data.prompt_hint, transcript.text);
-    if(metadata) {
+    const metadata = await generateMetadata(
+      data.title,
+      data.prompt_hint,
+      transcript.text
+    );
+    if (metadata) {
       await supabase().from("videos").update(metadata).eq("id", data.id);
     }
 
@@ -48,4 +54,3 @@ export async function POST({ request }: APIEvent) {
     return json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-

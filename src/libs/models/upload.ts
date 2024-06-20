@@ -8,7 +8,6 @@ import { Tables } from "../supabase/types";
 export type Status = "idle" | "uploading" | "done" | "error" | "cancelled";
 // export type Upload = ReturnType<typeof createUpload>;
 
-
 const defaultState = {
   error: "",
   progress: 0,
@@ -22,7 +21,7 @@ export class Upload {
   state = this.stateStore[0];
   setState = this.stateStore[1];
 
-  private dataStore = createStore<Partial<Tables<'uploads'>>>({
+  private dataStore = createStore<Partial<Tables<"uploads">>>({
     generate_description: true,
   });
   data = this.dataStore[0];
@@ -33,17 +32,17 @@ export class Upload {
 
   constructor(file: File) {
     this.file = file;
-    this.setData('title', file.name);
+    this.setData("title", file.name);
   }
 
-  async  start() {
+  async start() {
     if (this.state.progress) return;
 
     const token = (await supabase().auth.getSession()).data.session
       ?.access_token;
 
     fetch(`/api/video/getmuxuploadurl?token=${token}`).then(async (r) => {
-      const {data, error} = (await r.json()) as {
+      const { data, error } = (await r.json()) as {
         error?: string;
         data?: MuxUpload;
       };
@@ -61,13 +60,14 @@ export class Upload {
       upChunk.on("success", () => this.setState("status", "done"));
       this.onCancel.unshift(() => upChunk.abort());
 
-    this.setData('upload_id', data.id);
-     this.onCancel.unshift(async () => {
+      this.setData("upload_id", data.id);
+      this.onCancel.unshift(async () => {
         const uploads = supabase().from("uploads");
-         uploads.delete().eq("upload_id", data!.id).select();
+        uploads.delete().eq("upload_id", data!.id).select();
       });
 
-      if (this.state.status !== "uploading") this.setState('status',"uploading");
+      if (this.state.status !== "uploading")
+        this.setState("status", "uploading");
 
       this.save();
     });
@@ -75,16 +75,14 @@ export class Upload {
 
   async save() {
     if (this.data.id) {
-      const { error } = await supabase()
-        .from("uploads")
-        .upsert( this.data);
+      const { error } = await supabase().from("uploads").upsert(this.data);
       if (error) return this.setState("error", error.message);
     } else {
       const { data, error } = await supabase()
         .from("uploads")
         .insert(this.data)
         .select("id");
-      if (error) return this.setState('error', error.message);
+      if (error) return this.setState("error", error.message);
       this.data.id = data[0].id;
     }
   }

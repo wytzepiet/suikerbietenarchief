@@ -12,7 +12,7 @@ export async function GET(event: APIEvent) {
     new_asset_settings: {
       playback_policy: ["public"],
       encoding_tier: "smart",
-      mp4_support: "audio-only"
+      mp4_support: "audio-only",
     },
   });
   return json({ data: upload });
