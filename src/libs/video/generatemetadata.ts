@@ -39,7 +39,7 @@ export async function generateMetadata(
 			"Identificeer de belangrijkste en onderscheidende zoektermen die specifiek zijn voor de inhoud van deze video, maar vermijd generieke termen zoals 'suiker' en 'biet'. Geef de zoektermen als één lap tekst zonder leestekens of hoofdletters, met de termen gescheiden door een komma en een spatie. Geef maximaal 20 termen."
 		),
 		gpt(
-			'Schrijf een kort stukje tekst dat een idee geeft waar de video over gaat. Gebruik maximaal 500 tekens.'
+			'Schrijf een kort stukje tekst dat geschikt is als beschrijving onder de video. Gebruik maximaal 500 tekens.'
 		)
 	]);
 	if (!keywords || !description) return undefined;

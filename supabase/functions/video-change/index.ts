@@ -13,6 +13,7 @@ Deno.serve(async (req) => {
     message: `Hello ${res.name}!`,
   }
 
+  console.log('test log');
   console.log(JSON.stringify(res, null, 2));
 
   return new Response(

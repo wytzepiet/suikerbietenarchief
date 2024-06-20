@@ -110,7 +110,7 @@ function UploadDetails({ upload }: { upload: Upload }) {
         <p class="text-red-400">{upload.state.error}</p>
       </Show>
 
-      <Show when={!upload.state.error}>
+      <Show when={!upload.state.error && upload.state.status !== "done"}>
         <div class="flex justify-between text-muted-foreground text-sm mb-2">
           <p>{bytesToSize(upload.file.size)}</p>
           <div class="flex gap-2 items-center">
@@ -136,12 +136,12 @@ function UploadDetails({ upload }: { upload: Upload }) {
         </div>
 
         <Show when={upload.state.status == "uploading"}>
-          <Card class="w-full">
+          <div class="w-full bg-secondary rounded">
             <Skeleton
-              class="h-[2px] bg-foreground shadow-[0_0_10px_0px_white]  shadow-foreground"
-              style={`width: ${upload.state.progress ?? 0}%`}
+              class="h-[2px] bg-foreground shadow-[0_0_10px_1px_foreground/50]  shadow-foreground"
+              style={`width: ${upload.state.progress}%`}
             />
-          </Card>
+          </div>
         </Show>
       </Show>
     </div>
@@ -202,13 +202,18 @@ function VideoSheet({ upload }: { upload: Upload }) {
           <Show when={upload.data.generate_description}>
             <TextFieldRoot>
               <TextFieldLabel>Hint voor ChatGPT</TextFieldLabel>
-              <TextArea name="hint" value={upload.data.prompt_hint ?? ""} />
+              <TextArea
+                autoResize
+                name="hint"
+                value={upload.data.prompt_hint ?? ""}
+              />
             </TextFieldRoot>
           </Show>
           <Show when={!upload.data.generate_description}>
             <TextFieldRoot>
               <TextFieldLabel>Beschrijving</TextFieldLabel>
               <TextArea
+                autoResize
                 name="description"
                 value={upload.data.description ?? ""}
               />

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { A, action } from "@solidjs/router";
-import { Sparkles, Upload } from "lucide-solid";
+import { Save, Sparkles, Trash2, Upload, VideoIcon } from "lucide-solid";
 
 import { supabase } from "@/libs/supabase/client";
 import {
@@ -44,6 +44,7 @@ import { getTranscript, transcribe } from "@/libs/assemblyai/utils";
 import { generateMetadata } from "@/libs/video/generatemetadata";
 import { deleteMuxVideo } from "@/libs/mux/utils";
 import { VideoData, VideoRecord } from "@/libs/models/video";
+import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
 
 // async function synchoniseWithMux() {
 //   "use server";
@@ -208,15 +209,21 @@ function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
   return (
     <Sheet open={open()} onOpenChange={setSheetOpen}>
       <SheetTrigger class="flex gap-4 items-center p-1 hover:bg-muted rounded-md">
-        <img
-          class="h-12 aspect-square rounded object-cover"
-          src={video.thumbnailUrl({ width: 100 })}
-          alt={video.data.title ?? "Video thumbnail"}
-        />
+        <ImageRoot>
+          <ImageFallback>
+            <VideoIcon />
+          </ImageFallback>
+          <Image
+            class="h-12 aspect-square rounded object-cover"
+            src={video.thumbnailUrl({ width: 100 })}
+            alt={video.data.title ?? "Video thumbnail"}
+          ></Image>
+        </ImageRoot>
+
         <div class="text-left">
           <p>{video.data.title ?? "Geen titel"}</p>
-          <p class="text-muted-foreground text-sm justify-self-end">
-            {secondsToHms(video.data.duration ?? 0)}
+          <p class="text-muted-foreground text-sm justify-self-end text-ellipsis line-clamp-1">
+            {secondsToHms(video.data.duration ?? 0)} - {video.data.description}
           </p>
         </div>
       </SheetTrigger>
@@ -257,38 +264,32 @@ function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
                 <Sparkles size="1.25em" class="mr-1" /> genereren met AI
               </Button>
             </TextFieldLabel>
-            <TextArea name="description" value={video.data.description ?? ""} />
+            <TextArea
+              autoResize
+              name="description"
+              value={video.data.description ?? ""}
+            />
           </TextFieldRoot>
-          <TextFieldRoot>
-            <TextFieldLabel class="flex justify-between items-end">
-              Gpt hint
-            </TextFieldLabel>
-            <TextArea name="prompt_hint" value={video.data.prompt_hint ?? ""} />
-          </TextFieldRoot>
-
-          <Button
-            onclick={() => {
-              transcribe(video.data.playback_id!);
-            }}
-          >
-            Transcribe
-          </Button>
 
           <div class="flex gap-4">
-            <Button type="submit" onClick={() => setOpen(false)}>
+            <Button
+              type="submit"
+              class="flex items-center gap-1"
+              onClick={() => setOpen(false)}
+            >
+              <Save size="1.25em" />
               Opslaan
             </Button>
+            <Separator orientation="vertical" />
+            <Button
+              variant="destructive"
+              class="self-start flex items-center gap-1"
+              onclick={deleteVideo}
+            >
+              <Trash2 size="1.25em" /> Verwijderen
+            </Button>
           </div>
-          <Separator />
-          <Button
-            variant="destructive"
-            class="self-start"
-            onclick={deleteVideo}
-          >
-            Verwijderen
-          </Button>
         </form>
-        <p>{transcript()}</p>
       </SheetContent>
     </Sheet>
   );
