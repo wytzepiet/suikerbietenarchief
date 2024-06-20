@@ -13,6 +13,7 @@ export async function POST({ request }: APIEvent) {
     const transcriptId = String((await request.json()).transcript_id);
 
     console.log("Received AssemblyAI webhook:", { playbackId, transcriptId });
+    console.log(await request.json());
 
     const {data, error} = await supabase()
       .from("videos")
@@ -27,6 +28,8 @@ export async function POST({ request }: APIEvent) {
     if(!data.generate_description) return;
 
     const transcript = await getTranscript(transcriptId);
+    
+    console.log("Transcript text:", transcript.text);
 
     if(!transcript.text) {
       console.error("Error fetching transcript text for video:", data.title);

@@ -176,17 +176,23 @@ function Video(props: { video: Video }) {
     }
   }
 
-  function secondsToHms(d?: number | null) {
-    if (!d) d = 0;
+  function secondsToHms(d: number = 0) {
     const hms = [d / 3600, (d % 3600) / 60, (d % 3600) % 60];
     return hms.map((t) => Math.floor(t).toString().padStart(2, "0")).join(":");
   }
+
+  const [transcript, setTranscript] = createSignal<string | null>(null);
+  getTranscript(video.transcript_id!).then((t) => setTranscript(t.text!));
 
   (async (video: Tables<"videos">) => {
     if (!video.generate_description) return;
     if (!video.transcript_id) return;
     const transcript = await getTranscript(video.transcript_id);
 
+    if (!transcript.text) {
+      console.error("Error fetching transcript text for video:", video.title);
+      // transcribe(video.playback_id!);
+    }
     // console.log(video.title, video.prompt_hint, transcript.text);
     // const metadata = await generateMetadata(
     //   video.title,
@@ -209,7 +215,7 @@ function Video(props: { video: Video }) {
         <div class="text-left">
           <p>{video.title ?? "Geen titel"}</p>
           <p class="text-muted-foreground text-sm justify-self-end">
-            {secondsToHms(video.duration)}
+            {secondsToHms(video.duration ?? 0)}
           </p>
         </div>
       </SheetTrigger>
@@ -252,6 +258,20 @@ function Video(props: { video: Video }) {
             </TextFieldLabel>
             <TextArea name="description" value={video.description ?? ""} />
           </TextFieldRoot>
+          <TextFieldRoot>
+            <TextFieldLabel class="flex justify-between items-end">
+              Gpt hint
+            </TextFieldLabel>
+            <TextArea name="prompt_hint" value={video.prompt_hint ?? ""} />
+          </TextFieldRoot>
+
+          <Button
+            onclick={() => {
+              transcribe(video.playback_id!);
+            }}
+          >
+            Transcribe
+          </Button>
 
           <div class="flex gap-4">
             <Button type="submit" onClick={() => setOpen(false)}>
@@ -267,6 +287,7 @@ function Video(props: { video: Video }) {
             Verwijderen
           </Button>
         </form>
+        <p>{transcript()}</p>
       </SheetContent>
     </Sheet>
   );

@@ -16,10 +16,14 @@ export function createUpload(file: File) {
       progress: 0,
       status: "idle" as Status,
     });
-    const [data, setData ] = createStore<Partial<Tables<'uploads'>>>({
-      title: file.name
-    });
 
+    const [data, setData ] = createStore<Partial<Tables<'uploads'>>>({
+      title: file.name,
+    });
+    
+    supabase().auth.getSession().then((session) => {
+      setData('user_id', session.data.session?.user.id);
+    });
       /** A list of functions to call when the upload is removed */
       const onCancel: (() => void)[] = [];
      
@@ -91,7 +95,6 @@ export function createUpload(file: File) {
     cancel, 
     onCancel, 
     save, 
-   
   };
 
   return upload;

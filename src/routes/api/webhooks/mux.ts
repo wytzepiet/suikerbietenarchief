@@ -30,20 +30,19 @@ export async function POST({ request }: APIEvent) {
       const uploads = await supabase()
         .from("uploads")
         .select()
-        .eq("upload_id", hook.data.upload_id);
+        .eq("upload_id", hook.data.upload_id)
+        .order("created_at", { ascending: false });
 
       if (!uploads.data || uploads.data?.length === 0) {
         return oopsie(
           "Upload not found in database. upload_id= " + hook.data.upload_id,
           404
         );
-      } else if (uploads.data?.length > 1) {
-        return oopsie("Multiple uploads found in database", 500);
-      }
+      } 
 
       const video = await supabase()
         .from("videos")
-        .select("*")
+        .select()
         .eq("asset_id", hook.data.id);
 
       if (video.data && video.data.length > 0) {
@@ -53,8 +52,7 @@ export async function POST({ request }: APIEvent) {
       const upload = uploads.data[0];
       const { data, error } = await supabase()
         .from("videos")
-        .insert([
-          {
+        .insert({
             asset_id: hook.data.id,
             title: upload.title,
             description: upload.description,
@@ -64,13 +62,13 @@ export async function POST({ request }: APIEvent) {
             duration: hook.data.duration,
             generate_description: upload.generate_description,
             prompt_hint: upload.prompt_hint,
-            user_id: upload.user_id,
-            upload_id: upload.id.toString(),
-          },
-        ]);
+            created_by: upload.user_id,
+            edited_by: upload.user_id,
+            upload: upload.id,
+          });
 
       if (error) {
-        return oopsie("Error inserting video into database", 500);
+        return oopsie("Error inserting video into database: " + error.message, 500);
       }
       return new Response("OK", { status: 200 });
     }

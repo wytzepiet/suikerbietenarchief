@@ -1,6 +1,5 @@
-import PageTitle, { pageTitle } from "@/components/pageTitle";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { supabase } from "@/libs/supabase/client";
 import { A, RouteSectionProps, useNavigate } from "@solidjs/router";
 import { Calendar, Images, LayoutDashboard, User, Video } from "lucide-solid";
@@ -60,7 +59,10 @@ export default function Admin(props: RouteSectionProps) {
                     <A href={item.href} class="block w-full">
                       <Button
                         variant={current ? "secondary" : "ghost"}
-                        class={cn(currentClass, "w-full justify-start font-normal flex gap-2")}
+                        class={cn(
+                          currentClass,
+                          "w-full justify-start font-normal flex gap-2"
+                        )}
                       >
                         <item.icon strokeWidth={1.5} size="1.5em" />
                         {item.title}

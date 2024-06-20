@@ -47,8 +47,11 @@ export type Database = {
           aspect_ratio: string | null
           asset_id: string | null
           created_at: string
+          created_by: string | null
           description: string | null
           duration: number | null
+          edited_at: string | null
+          edited_by: string | null
           generate_description: boolean | null
           id: number
           keywords: string[] | null
@@ -57,16 +60,17 @@ export type Database = {
           status: string | null
           title: string | null
           transcript_id: string | null
-          updated_at: string | null
-          upload_id: string | null
-          user_id: string | null
+          upload: number | null
         }
         Insert: {
           aspect_ratio?: string | null
           asset_id?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           duration?: number | null
+          edited_at?: string | null
+          edited_by?: string | null
           generate_description?: boolean | null
           id?: number
           keywords?: string[] | null
@@ -75,16 +79,17 @@ export type Database = {
           status?: string | null
           title?: string | null
           transcript_id?: string | null
-          updated_at?: string | null
-          upload_id?: string | null
-          user_id?: string | null
+          upload?: number | null
         }
         Update: {
           aspect_ratio?: string | null
           asset_id?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           duration?: number | null
+          edited_at?: string | null
+          edited_by?: string | null
           generate_description?: boolean | null
           id?: number
           keywords?: string[] | null
@@ -93,11 +98,17 @@ export type Database = {
           status?: string | null
           title?: string | null
           transcript_id?: string | null
-          updated_at?: string | null
-          upload_id?: string | null
-          user_id?: string | null
+          upload?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "videos_upload_fkey"
+            columns: ["upload"]
+            isOneToOne: false
+            referencedRelation: "uploads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
