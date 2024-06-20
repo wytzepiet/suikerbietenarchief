@@ -137,10 +137,15 @@ function UploadDetails({ upload }: { upload: Upload }) {
 
         <Show when={upload.state.status == "uploading"}>
           <div class="w-full bg-secondary rounded">
-            <Skeleton
-              class="h-[2px] bg-foreground shadow-[0_0_10px_1px_foreground/50]  shadow-foreground"
-              style={`width: ${upload.state.progress}%`}
-            />
+            <div
+              class="relative h-[2px] bg-foreground/40 rounded"
+              style={`width: ${upload.state.progress}%;`}
+            >
+              <div
+                class="absolute inset-0 rounded animate-gradient-pulse"
+                style="background: linear-gradient(to right, transparent 25%, white 65%, transparent 75%); background-size: 400% 400%;"
+              ></div>
+            </div>
           </div>
         </Show>
       </Show>

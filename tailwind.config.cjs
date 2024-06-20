@@ -77,12 +77,17 @@ module.exports = {
           "0%, 100%": { opacity: 0.5 },
           "50%": { opacity: 1 },
         },
+        "gradient-pulse": {
+          "0%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "collapsible-down": "collapsible-down 0.2s ease-out",
         "collapsible-up": "collapsible-up 0.2s ease-out",
+        "gradient-pulse": "gradient-pulse 2s infinite",
         pulse:
           "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) 1s infinite, fade-in 1s backwards",
       },

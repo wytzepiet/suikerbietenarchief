@@ -5,22 +5,28 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 /// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 
-console.log("Hello from Functions!")
+import { AssemblyAI } from "npm:assemblyai";
+
+console.log("Hello from Functions!");
 
 Deno.serve(async (req) => {
-  const res = await req.json()
+  const assemblyAI = new AssemblyAI({
+    apiKey: Deno.env.get("ASSEMBLYAI_API_KEY"),
+  });
+  const res = await req.json();
   const data = {
     message: `Hello ${res.name}!`,
-  }
+  };
 
-  console.log('test log');
+  new AssemblyAI({});
+
+  console.log("test log");
   console.log(JSON.stringify(res, null, 2));
 
-  return new Response(
-    JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
-  )
-})
+  return new Response(JSON.stringify(data), {
+    headers: { "Content-Type": "application/json" },
+  });
+});
 
 /* To invoke locally:
 
@@ -32,4 +38,4 @@ Deno.serve(async (req) => {
     --header 'Content-Type: application/json' \
     --data '{"name":"Functions"}'
 
-*/e
+*/
