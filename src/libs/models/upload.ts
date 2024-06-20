@@ -1,4 +1,4 @@
-import { createSignal, onCleanup } from "solid-js";
+import { createSignal, createUniqueId, onCleanup } from "solid-js";
 import { supabase } from "../supabase/client";
 import { Upload as MuxUpload } from "@mux/mux-node/resources/video/uploads.mjs";
 import { UpChunk } from "@mux/upchunk";
@@ -16,6 +16,7 @@ const defaultState = {
 
 export class Upload {
   file: File;
+  uid = createUniqueId();
 
   state: typeof defaultState;
   setState: SetStoreFunction<typeof defaultState>;
@@ -76,12 +77,14 @@ export class Upload {
   }
 
   async save() {
+    console.log("saving upload", this.data);
     if (this.data.id) {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("uploads")
         .update(this.data)
         .eq("id", this.data.id);
       if (error) return this.setState("error", error.message);
+      console.log("updated upload", data);
     } else {
       const { data, error } = await supabase
         .from("uploads")
@@ -91,7 +94,8 @@ export class Upload {
         console.error(error);
         return this.setState("error", error.message);
       }
-      this.data.id = data[0].id;
+      console.log(data);
+      this.setData("id", data[0].id);
     }
   }
 }

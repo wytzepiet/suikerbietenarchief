@@ -105,6 +105,8 @@ function UploadDetails({ upload }: { upload: Upload }) {
     <div class="w-[400px] mb-6">
       <p>{upload.data.title}</p>
 
+      <p>{upload.uid}</p>
+
       <Show when={upload.state.error}>
         <p class="text-red-400">{upload.state.error}</p>
       </Show>
@@ -164,7 +166,7 @@ function VideoSheet({ upload }: { upload: Upload }) {
 
     upload.save();
     setOpen(false);
-  });
+  }, upload.uid);
 
   return (
     <Sheet open={open()} onOpenChange={setOpen}>

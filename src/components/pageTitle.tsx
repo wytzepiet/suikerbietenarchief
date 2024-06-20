@@ -5,18 +5,13 @@ interface Props {
   children: string;
 }
 
-let disposer: () => void;
-let pageTitle: Accessor<string>;
-let setPageTitle: Setter<string>;
+const [pageTitle, setPageTitle] = createSignal("Suikerbietenarchief");
 
-createRoot((dispose) => {
-  [pageTitle, setPageTitle] = createSignal("Suikerbietenarchief");
-  disposer = dispose;
-});
-
-export { pageTitle, setPageTitle, disposer };
+export { pageTitle, setPageTitle };
 
 export default function PageTitle(props: Props) {
   setPageTitle(props.children);
-  return <Title>{props.children} | Suikerbietenarchief</Title>;
+  const children = props.children;
+
+  return <Title>{children} | Suikerbietenarchief</Title>;
 }
