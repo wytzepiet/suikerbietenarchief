@@ -78,7 +78,10 @@ export class Upload {
 
   async save() {
     if (this.data.id) {
-      const { error } = await supabase().from("uploads").upsert(this.data);
+      const { error } = await supabase()
+        .from("uploads")
+        .update(this.data)
+        .eq("id", this.data.id);
       if (error) return this.setState("error", error.message);
     } else {
       const { data, error } = await supabase()
