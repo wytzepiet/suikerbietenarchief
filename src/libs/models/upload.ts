@@ -22,7 +22,9 @@ export class Upload {
   state = this.stateStore[0];
   setState = this.stateStore[1];
 
-  private dataStore = createStore<Partial<Tables<'uploads'>>>({});
+  private dataStore = createStore<Partial<Tables<'uploads'>>>({
+    generate_description: true,
+  });
   data = this.dataStore[0];
   setData = this.dataStore[1];
 

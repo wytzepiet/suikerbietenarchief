@@ -220,7 +220,7 @@ function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
           </p>
         </div>
       </SheetTrigger>
-      <SheetContent class="flex flex-col gap-4 w-[400px] overflow-scroll">
+      <SheetContent class="flex flex-col gap-4 w-[400px] overflow-y-scroll">
         <SheetHeader>
           <SheetTitle>Bewerk video</SheetTitle>
           <SheetDescription>

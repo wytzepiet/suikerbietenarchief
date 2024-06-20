@@ -8,10 +8,11 @@ export async function GET(event: APIEvent) {
   // const user = await supabase.auth.getUser();
 
   const upload = await mux.video.uploads.create({
-    cors_origin: "https://suikerbietenarchief.nl",
+    cors_origin: "https://suikerbietenarchief.vercel.app",
     new_asset_settings: {
       playback_policy: ["public"],
       encoding_tier: "smart",
+      mp4_support: "audio-only"
     },
   });
   return json({ data: upload });
