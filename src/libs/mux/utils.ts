@@ -10,7 +10,5 @@ export function getVideoInfo(assetId: string | null) {
 
 
 export async function deleteMuxVideo(assetId: string) {
-    const user = await supabase().auth.getUser();
-    if(!user.data.user) return;
     return await mux.video.assets.delete(assetId);
 }

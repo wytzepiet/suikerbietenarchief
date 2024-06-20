@@ -24,7 +24,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { TextArea } from "@/components/ui/textarea";
 import { action } from "@solidjs/router";
-import { Status, Upload, createUpload } from "@/libs/video/createUpload";
+import { Status, Upload } from "@/libs/models/upload";
 import PageTitle, { pageTitle } from "@/components/pageTitle";
 
 export default function UploadVideos() {
@@ -39,7 +39,7 @@ export default function UploadVideos() {
   function createUploads(files: FileList | null) {
     if (!files) return;
     const newUploads = [...files].map((file) => {
-      const upload = createUpload(file);
+      const upload = new Upload(file);
 
       upload.onCancel.push(() => {
         setUploads(uploads().filter((u) => u.file !== file));

@@ -21,7 +21,7 @@ export default function MuxPlayer(props: MuxPlayerProps) {
     >
       {/* @ts-ignore */}
       <mux-player
-        class={"absolute inset-0"}
+        class={aspectRatio ? "absolute inset-0" : ""}
         playback-id={props.playbackId}
         autoplay={props.autoplay}
         loop={props.autoplay}

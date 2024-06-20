@@ -43,6 +43,7 @@ import { TextArea } from "@/components/ui/textarea";
 import { getTranscript, transcribe } from "@/libs/assemblyai/utils";
 import { generateMetadata } from "@/libs/video/generatemetadata";
 import { deleteMuxVideo } from "@/libs/mux/utils";
+import { VideoData, VideoRecord } from "@/libs/models/video";
 
 // async function synchoniseWithMux() {
 //   "use server";
@@ -67,20 +68,27 @@ import { deleteMuxVideo } from "@/libs/mux/utils";
 // }
 
 export default function Videos() {
-  const [videos] = createResource(async () => {
+  const [videos, { refetch, mutate }] = createResource(async () => {
     const vids = await supabase().from("videos").select().neq("asset_id", null);
-    return vids.data?.map((v) => createStore(v));
+    return vids.data?.map((video) => {
+      const vid = new VideoRecord(video);
+      vid.onDelete.push(() => {
+        mutate(videos()?.filter((v) => v.data.id !== video.id));
+        console.log("deleted" + video.title);
+      });
+      return vid;
+    });
   });
 
   createEffect(() => {
-    videos()?.forEach(async ([video]) => {
-      if (!video.transcript_id) {
-        console.log("No transcript ID found for video: ", video.title);
+    videos()?.forEach(async (video) => {
+      if (!video.data.transcript_id) {
+        console.log("No transcript ID found for video: ", video.data.title);
         return;
       }
-      const transcript = await getTranscript(video.transcript_id);
+      const transcript = await getTranscript(video.data.transcript_id ?? "");
       if (!transcript.text)
-        console.log("No transcript text found for video: ", video.title);
+        console.log("No transcript text found for video: ", video.data.title);
       // if (video.playback_id) transcribe(video.playback_id);
     });
   });
@@ -119,11 +127,7 @@ export default function Videos() {
   );
 }
 
-type Video = [get: Tables<"videos">, set: SetStoreFunction<Tables<"videos">>];
-
-function Video(props: { video: Video }) {
-  const [video, setVideo] = props.video;
-
+function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
   const [open, setOpen] = createSignal(false);
   let hasChanged = false;
 
@@ -143,23 +147,23 @@ function Video(props: { video: Video }) {
   };
 
   const saveVideo = action(async (data: FormData) => {
-    const changes = {
-      title: String(data.get("title")),
-    };
+    data.forEach((value, key) => {
+      if (!(key in video.data)) return;
+      // @ts-ignore
+      video.setData(key, String(value));
+    }, video.data.id?.toString());
 
-    console.log(video.id);
+    console.log(video.data.id);
 
     const vid = await supabase()
       .from("videos")
-      .update(changes)
-      .eq("id", video.id)
+      .update(video.data)
+      .eq("id", video.data.id!)
       .select()
       .single();
 
-    if (vid.data) setVideo(vid.data);
-
     setOpen(false);
-  }, video.id.toString());
+  }, video.data.id?.toString());
 
   async function deleteVideo() {
     const confirmed = await confirmWithDailog(
@@ -170,10 +174,7 @@ function Video(props: { video: Video }) {
       },
       { variant: "destructive" }
     );
-    if (confirmed) {
-      await supabase().from("videos").delete().eq("id", video.id);
-      if (video.asset_id) deleteMuxVideo(video.asset_id);
-    }
+    if (confirmed) video.delete();
   }
 
   function secondsToHms(d: number = 0) {
@@ -182,9 +183,9 @@ function Video(props: { video: Video }) {
   }
 
   const [transcript, setTranscript] = createSignal<string | null>(null);
-  getTranscript(video.transcript_id!).then((t) => setTranscript(t.text!));
+  getTranscript(video.data.transcript_id!).then((t) => setTranscript(t.text!));
 
-  (async (video: Tables<"videos">) => {
+  (async (video: Partial<Tables<"videos">>) => {
     if (!video.generate_description) return;
     if (!video.transcript_id) return;
     const transcript = await getTranscript(video.transcript_id);
@@ -202,20 +203,20 @@ function Video(props: { video: Video }) {
     // if (metadata) {
     //   supabase().from("videos").update(metadata).eq("id", video.id);
     // }
-  })({ ...video });
+  })({ ...video.data });
 
   return (
     <Sheet open={open()} onOpenChange={setSheetOpen}>
       <SheetTrigger class="flex gap-4 items-center p-1 hover:bg-muted rounded-md">
         <img
           class="h-12 aspect-square rounded object-cover"
-          src={`https://image.mux.com/${video.playback_id}/thumbnail.webp?width=100`}
-          alt={video.title ?? "Video thumbnail"}
+          src={video.thumbnailUrl({ width: 100 })}
+          alt={video.data.title ?? "Video thumbnail"}
         />
         <div class="text-left">
-          <p>{video.title ?? "Geen titel"}</p>
+          <p>{video.data.title ?? "Geen titel"}</p>
           <p class="text-muted-foreground text-sm justify-self-end">
-            {secondsToHms(video.duration ?? 0)}
+            {secondsToHms(video.data.duration ?? 0)}
           </p>
         </div>
       </SheetTrigger>
@@ -229,8 +230,8 @@ function Video(props: { video: Video }) {
 
         <div class="border rounded overflow-hidden shrink-0">
           <MuxPlayer
-            playbackId={video.playback_id ?? ""}
-            aspectRatio={video.aspect_ratio}
+            playbackId={video.data.playback_id ?? ""}
+            aspectRatio={video.data.aspect_ratio}
           />
         </div>
         <form class="flex flex-col gap-8" action={saveVideo} method="post">
@@ -238,7 +239,7 @@ function Video(props: { video: Video }) {
             <TextFieldLabel>Titel</TextFieldLabel>
             <TextField
               name="title"
-              value={video.title ?? ""}
+              value={video.data.title ?? ""}
               onInput={handleChange}
             ></TextField>
           </TextFieldRoot>
@@ -256,18 +257,18 @@ function Video(props: { video: Video }) {
                 <Sparkles size="1.25em" class="mr-1" /> genereren met AI
               </Button>
             </TextFieldLabel>
-            <TextArea name="description" value={video.description ?? ""} />
+            <TextArea name="description" value={video.data.description ?? ""} />
           </TextFieldRoot>
           <TextFieldRoot>
             <TextFieldLabel class="flex justify-between items-end">
               Gpt hint
             </TextFieldLabel>
-            <TextArea name="prompt_hint" value={video.prompt_hint ?? ""} />
+            <TextArea name="prompt_hint" value={video.data.prompt_hint ?? ""} />
           </TextFieldRoot>
 
           <Button
             onclick={() => {
-              transcribe(video.playback_id!);
+              transcribe(video.data.playback_id!);
             }}
           >
             Transcribe

@@ -58,8 +58,6 @@ export async function POST({ request }: APIEvent) {
             description: upload.description,
             status: hook.data.status,
             playback_id: hook.data.playback_ids?.at(0)?.id,
-            aspect_ratio: hook.data.aspect_ratio,
-            duration: hook.data.duration,
             generate_description: upload.generate_description,
             prompt_hint: upload.prompt_hint,
             created_by: upload.user_id,
@@ -72,11 +70,25 @@ export async function POST({ request }: APIEvent) {
       }
       return new Response("OK", { status: 200 });
     }
+    if(hook.type === "video.asset.ready") {
+      const { data, error } = await supabase()
+        .from("videos")
+        .update({ 
+          status: hook.data.status,
+          playback_id: hook.data.playback_ids?.at(0)?.id,
+          aspect_ratio: hook.data.aspect_ratio,
+          duration: hook.data.duration,
+        })
+        .eq("asset_id", hook.data.id)
+        .select();
+
+      if (error) {
+        return oopsie("Error updating video status in database: " + error.message, 500);
+      }
+    }
     if (hook.type === "video.asset.static_renditions.ready") {
-      hook.data.playback_ids?.forEach(({id}) => {
-        console.log('transcribing. playback_id: ', id);
-        transcribe(id);
-      });
+      const playbackId = hook.data.playback_ids?.at(0)?.id;
+      if(playbackId) transcribe(playbackId);
     }
 
     return new Response("OK", { status: 200 });

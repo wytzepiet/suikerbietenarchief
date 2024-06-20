@@ -11,7 +11,7 @@ export async function GET(event: APIEvent) {
     cors_origin: "https://suikerbietenarchief.nl",
     new_asset_settings: {
       playback_policy: ["public"],
-      encoding_tier: "baseline",
+      encoding_tier: "smart",
     },
   });
   return json({ data: upload });
