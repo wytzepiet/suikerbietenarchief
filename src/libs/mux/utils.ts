@@ -1,7 +1,6 @@
 "use server";
 
 import { mux } from "@/libs/mux/server";
-import { supabase } from "../supabase/server";
 
 export function getVideoInfo(assetId: string | null) {
   if (!assetId) return null;

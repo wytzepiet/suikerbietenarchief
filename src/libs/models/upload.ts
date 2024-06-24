@@ -8,6 +8,8 @@ import { Tables } from "../supabase/types";
 export type Status = "idle" | "uploading" | "done" | "error" | "cancelled";
 // export type Upload = ReturnType<typeof createUpload>;
 
+const ref = supabase.from("uploads");
+
 const defaultState = {
   error: "",
   progress: 0,
@@ -38,7 +40,7 @@ export class Upload {
   }
 
   async start() {
-    if (this.state.progress) return;
+    if (this.state.status !== "idle") return;
 
     const token = (await supabase.auth.getSession()).data.session?.access_token;
 
@@ -57,16 +59,13 @@ export class Upload {
         chunkSize: 5120, // Uploads the file in ~5mb chunks
       });
       upChunk.on("error", (err) => this.setState("error", err.detail));
-      upChunk.on("progress", (prog) => {
-        this.setState("progress", prog.detail);
-      });
+      upChunk.on("progress", (prog) => this.setState("progress", prog.detail));
       upChunk.on("success", () => this.setState("status", "done"));
       this.onCancel.unshift(() => upChunk.abort());
 
       this.setData("upload_id", data.id);
       this.onCancel.unshift(async () => {
-        const uploads = supabase.from("uploads");
-        uploads.delete().eq("upload_id", data!.id).select();
+        ref.delete().eq("upload_id", data!.id).select();
       });
 
       if (this.state.status !== "uploading")
@@ -78,24 +77,18 @@ export class Upload {
 
   async save() {
     console.log("saving upload", this.data);
-    if (this.data.id) {
-      const { data, error } = await supabase
-        .from("uploads")
-        .update(this.data)
-        .eq("id", this.data.id);
-      if (error) return this.setState("error", error.message);
-      console.log("updated upload", data);
+    if (this.data.id !== undefined) {
+      const res = await ref.update(this.data).eq("id", this.data.id);
+      if (res.error) return this.setState("error", res.error.message);
+      console.log("updated upload", res.data);
     } else {
-      const { data, error } = await supabase
-        .from("uploads")
-        .insert(this.data)
-        .select("id");
-      if (error) {
-        console.error(error);
-        return this.setState("error", error.message);
+      const res = await ref.insert(this.data).select("id");
+      if (res.error) {
+        console.error(res.error);
+        return this.setState("error", res.error.message);
       }
-      console.log(data);
-      this.setData("id", data[0].id);
+      console.log(res.data);
+      this.setData("id", res.data[0].id);
     }
   }
 }

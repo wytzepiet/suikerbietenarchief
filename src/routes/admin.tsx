@@ -2,7 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/libs/supabase/client";
 import { A, RouteSectionProps, useNavigate } from "@solidjs/router";
-import { Calendar, Images, LayoutDashboard, User, Video } from "lucide-solid";
+import {
+  Calendar,
+  Images,
+  LayoutDashboard,
+  MapPin,
+  User,
+  Video,
+} from "lucide-solid";
 import { onMount } from "solid-js";
 import { setUser, user } from "@/libs/supabase/user";
 import { cn } from "@/libs/cn";
@@ -22,6 +29,11 @@ const menu = [
     title: "Fotosets",
     href: "/admin/fotosets",
     icon: Images,
+  },
+  {
+    title: "Locaties",
+    href: "/admin/locaties",
+    icon: MapPin,
   },
   {
     title: "Tijdlijn",

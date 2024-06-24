@@ -5,7 +5,6 @@ import { Save, Sparkles, Trash2, Upload, VideoIcon } from "lucide-solid";
 import { supabase } from "@/libs/supabase/client";
 import {
   For,
-  Show,
   Suspense,
   createEffect,
   createResource,
@@ -25,25 +24,15 @@ import {
   TextFieldRoot,
 } from "@/components/ui/textfield";
 import { Separator } from "@/components/ui/separator";
-import { Tables } from "@/libs/supabase/types";
 import MuxPlayer from "@/components/muxPlayer";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PageTitle, { pageTitle } from "@/components/pageTitle";
 
 import { confirmWithDailog } from "@/components/confirmDialog";
-import { SetStoreFunction, createStore } from "solid-js/store";
-import {
-  Switch,
-  SwitchControl,
-  SwitchLabel,
-  SwitchThumb,
-} from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TextArea } from "@/components/ui/textarea";
-import { getTranscript, transcribe } from "@/libs/assemblyai/utils";
-import { generateMetadata } from "@/libs/video/generatemetadata";
-import { deleteMuxVideo } from "@/libs/mux/utils";
-import { VideoData, VideoRecord } from "@/libs/models/video";
+import { getTranscript } from "@/libs/assemblyai/utils";
+import { VideoData, Video } from "@/libs/models/video";
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
 
 // async function synchoniseWithMux() {
@@ -69,12 +58,12 @@ import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
 // }
 
 export default function Videos() {
-  const [videos, { refetch, mutate }] = createResource(async () => {
+  const [videos, { refetch }] = createResource(async () => {
     const vids = await supabase.from("videos").select().neq("asset_id", null);
     return vids.data?.map((video) => {
-      const vid = new VideoRecord(video);
+      const vid = new Video(video);
       vid.onDelete.push(() => {
-        mutate(videos()?.filter((v) => v.data.id !== video.id));
+        refetch();
         console.log("deleted" + video.title);
       });
       return vid;
@@ -120,7 +109,9 @@ export default function Videos() {
               <Skeleton delay={i * 100} class="h-[50px] p-1 box-content" />
             ))}
           >
-            <For each={videos()}>{(video) => <Video video={video} />}</For>
+            <For each={videos()}>
+              {(video) => <VideoListItem video={video} />}
+            </For>
           </Suspense>
         </div>
       </CardContent>
@@ -128,7 +119,7 @@ export default function Videos() {
   );
 }
 
-function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
+function VideoListItem<T extends VideoData>({ video }: { video: Video<T> }) {
   const [open, setOpen] = createSignal(false);
   let hasChanged = false;
 
@@ -145,6 +136,7 @@ function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
       hasChanged = !confirmed;
     }
     if (!hasChanged) setOpen(value);
+    if (open()) video.fetchData();
   };
 
   const saveVideo = action(async (data: FormData) => {
@@ -175,7 +167,10 @@ function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
       },
       { variant: "destructive" }
     );
-    if (confirmed) video.delete();
+    if (confirmed) {
+      video.delete();
+      setOpen(false);
+    }
   }
 
   function secondsToHms(d: number = 0) {
@@ -186,35 +181,14 @@ function Video<T extends VideoData>({ video }: { video: VideoRecord<T> }) {
   const [transcript, setTranscript] = createSignal<string | null>(null);
   getTranscript(video.data.transcript_id!).then((t) => setTranscript(t.text!));
 
-  (async (video: Partial<Tables<"videos">>) => {
-    if (!video.generate_description) return;
-    if (!video.transcript_id) return;
-    const transcript = await getTranscript(video.transcript_id);
-
-    if (!transcript.text) {
-      console.error("Error fetching transcript text for video:", video.title);
-      // transcribe(video.playback_id!);
-    }
-    // console.log(video.title, video.prompt_hint, transcript.text);
-    // const metadata = await generateMetadata(
-    //   video.title,
-    //   video.prompt_hint,
-    //   transcript.text
-    // );
-    // if (metadata) {
-    //   .from("videos").update(metadata).eq("id", video.id);
-    // }
-  })({ ...video.data });
-
   return (
     <Sheet open={open()} onOpenChange={setSheetOpen}>
       <SheetTrigger class="flex gap-4 items-center p-1 hover:bg-muted rounded-md">
-        <ImageRoot>
+        <ImageRoot class="h-12 w-12 rounded">
           <ImageFallback>
             <VideoIcon />
           </ImageFallback>
           <Image
-            class="h-12 aspect-square rounded object-cover"
             src={video.thumbnailUrl({ width: 100 })}
             alt={video.data.title ?? "Video thumbnail"}
           ></Image>

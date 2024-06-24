@@ -29,7 +29,7 @@ const updateEmail = action(async (formData: FormData) => {
   const email = String(formData.get("email"));
   if (!email) return;
   await supabase.auth.updateUser({ email });
-});
+}, "updateEmail");
 
 async function updatePassword() {
   if (!user()?.email) return;

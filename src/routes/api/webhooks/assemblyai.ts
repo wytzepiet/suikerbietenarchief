@@ -8,15 +8,15 @@ import { APIEvent } from "node_modules/@solidjs/start/dist/server";
 
 export async function POST({ request }: APIEvent) {
   try {
-    const json = await request.json();
+    const res = await request.json();
     const { searchParams } = new URL(request.url);
     const playbackId = String(searchParams.get("playback_id"));
-    const transcriptId = String(json.transcript_id);
+    const transcriptId = String(res.transcript_id);
 
     console.log("Received AssemblyAI webhook:", { playbackId, transcriptId });
-    console.log(json);
+    console.log(res);
 
-    const { data, error } = await 
+    const { data, error } = await supabase()
       .from("videos")
       .update({ transcript_id: transcriptId })
       .eq("playback_id", playbackId)
@@ -45,7 +45,7 @@ export async function POST({ request }: APIEvent) {
       transcript.text
     );
     if (metadata) {
-      await .from("videos").update(metadata).eq("id", data.id);
+      await supabase().from("videos").update(metadata).eq("id", data.id);
     }
 
     return json({ message: "Webhook received successfully" }, { status: 200 });
