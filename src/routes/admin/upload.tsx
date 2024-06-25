@@ -23,22 +23,22 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { TextArea } from "@/components/ui/textarea";
 import { action } from "@solidjs/router";
-import { Status, Upload } from "@/libs/models/upload";
+import { Status, Upload, createUpload } from "@/libs/models/upload";
 import PageTitle, { pageTitle } from "@/components/pageTitle";
 
 export default function UploadVideos() {
   const [uploads, setUploads] = createSignal<Upload[]>([]);
 
-  const filterUploads = (s: Status) =>
+  const filterStatus = (s: Status) =>
     uploads().filter((u) => u.state.status == s);
-  const newUploads = createMemo(() => filterUploads("idle"));
-  const busyUploads = createMemo(() => filterUploads("uploading"));
-  const doneUploads = createMemo(() => filterUploads("done"));
+  const newUploads = createMemo(() => filterStatus("idle"));
+  const busyUploads = createMemo(() => filterStatus("uploading"));
+  const doneUploads = createMemo(() => filterStatus("done"));
 
   function createUploads(files: FileList | null) {
     if (!files) return;
     const newUploads = [...files].map((file) => {
-      const upload = new Upload(file);
+      const upload = createUpload(file);
 
       upload.onCancel.push(() => {
         setUploads(uploads().filter((u) => u.file !== file));
@@ -162,7 +162,7 @@ function VideoSheet({ upload }: { upload: Upload }) {
     upload.setData("description", String(data.get("description")));
     upload.setData("prompt_hint", String(data.get("hint")));
 
-    upload.save();
+    upload.saveToDatabase();
     setOpen(false);
   }, upload.uid);
 

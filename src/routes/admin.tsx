@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { supabase } from "@/libs/supabase/client";
+import { supabase } from "@/libs/services/supabase/client";
 import { A, RouteSectionProps, useNavigate } from "@solidjs/router";
 import {
   Calendar,
@@ -11,7 +11,7 @@ import {
   Video,
 } from "lucide-solid";
 import { onMount } from "solid-js";
-import { setUser, user } from "@/libs/supabase/user";
+import { setUser, user } from "@/libs/services/supabase/user";
 import { cn } from "@/libs/cn";
 
 const menu = [

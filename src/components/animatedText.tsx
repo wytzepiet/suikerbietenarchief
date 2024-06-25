@@ -1,4 +1,4 @@
-import inView from "@/libs/inView";
+import inView from "@/libs/utils/inView";
 import styles from "./animatedtext.module.css";
 import { mergeProps, onMount } from "solid-js";
 

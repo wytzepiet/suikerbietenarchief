@@ -1,4 +1,4 @@
-import parallax from "@/libs/parallax";
+import parallax from "@/libs/utils/parallax";
 import { onCleanup, onMount } from "solid-js";
 import { JSX } from "solid-js";
 

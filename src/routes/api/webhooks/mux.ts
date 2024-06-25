@@ -1,8 +1,8 @@
 "use server";
 
-import { mux } from "@/libs/mux/server";
-import { supabase } from "@/libs/supabase/server";
-import { transcribe } from "@/libs/assemblyai/utils";
+import { mux } from "@/libs/services/mux";
+import { supabase } from "@/libs/services/supabase/server";
+import { transcribe } from "@/libs/services/assemblyai";
 import { APIEvent } from "node_modules/@solidjs/start/dist/server";
 
 function oopsie(message: string, status: number) {

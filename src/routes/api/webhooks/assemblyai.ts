@@ -1,8 +1,8 @@
 "use server";
 
-import { getTranscript } from "@/libs/assemblyai/utils";
-import { supabase } from "@/libs/supabase/server";
-import { generateMetadata } from "@/libs/video/generatemetadata";
+import { getTranscript } from "@/libs/services/assemblyai";
+import { supabase } from "@/libs/services/supabase/server";
+import { generateMetadata } from "@/libs/services/openai";
 import { json } from "@solidjs/router";
 import { APIEvent } from "node_modules/@solidjs/start/dist/server";
 

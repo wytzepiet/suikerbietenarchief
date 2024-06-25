@@ -1,45 +1,63 @@
-import { SetStoreFunction, createStore } from "solid-js/store";
-import { Tables } from "../supabase/types";
-import { supabase } from "../supabase/client";
-import { deleteMuxVideo } from "../mux/utils";
+import { createStore } from "solid-js/store";
+import { Tables } from "../services/supabase/types";
+import { supabase } from "../services/supabase/client";
+import { deleteMuxVideo } from "../services/mux";
+import { PostgrestResponse } from "@supabase/supabase-js";
+import { deleteTranscript } from "../services/assemblyai";
 
-export type VideoData = { id: number } & Partial<Omit<Tables<"videos">, "id">>;
+type Data = Tables<"videos">;
 const ref = supabase.from("videos");
 
-export class Video<T extends VideoData> {
-  data: T;
-  setData: SetStoreFunction<T>;
-  updates: VideoData;
-  update: SetStoreFunction<VideoData>;
+export type Video = ReturnType<typeof createVideo>;
 
-  constructor(data: T) {
-    [this.data, this.setData] = createStore(data);
-    [this.updates, this.update] = createStore({ id: data.id });
-  }
+export function createVideo(input: Data) {
+  const [data, setData] = createStore<Data>(input);
+  const [updates, update] = createStore<Partial<Data>>({ id: input.id });
 
-  async fetchData(selector?: string) {
-    if (!this.data.id) return;
-    const res = await ref.select(selector).eq("id", this.data.id).single();
+  function saveResponse(res: PostgrestResponse<Data>) {
     if (res.error) console.error(res.error);
-    if (res.data) this.setData(res.data as unknown as T);
+    if (res.data) setData(res.data[0]);
   }
 
-  async save() {
-    const { data, error } = await ref.upsert(this.data);
-    if (error) console.error(error);
-    if (data) this.setData(data[0]);
+  const refetch = () => ref.select().eq("id", data.id).then(saveResponse);
+  const save = () => ref.upsert(updates).select().then(saveResponse);
+
+  const onDelete: (() => void)[] = [];
+  async function deleteEverywhere() {
+    if (data.asset_id) deleteMuxVideo(data.asset_id);
+    if (data.transcript_id) deleteTranscript(data.transcript_id);
+    await ref.delete().eq("id", data.id);
+    onDelete.forEach((fn) => fn());
   }
 
-  onDelete: (() => void)[] = [];
+  function thumbnailUrl(
+    params: { width?: number; height?: number },
+    type: "thumbnail" | "animated" = "thumbnail"
+  ) {
+    const url = new URL(
+      `https://image.mux.com/${data.playback_id}/${type}.webp`
+    );
+    if (params.width) url.searchParams.set("width", String(params.width));
+    if (params.height) url.searchParams.set("height", String(params.height));
 
-  async delete() {
-    if (this.data.id) await ref.delete().eq("id", this.data.id);
-    if (this.data.asset_id) await deleteMuxVideo(this.data.asset_id);
-    this.onDelete.forEach((fn) => fn());
+    return url.toString();
   }
 
-  thumbnailUrl({ width, height }: { width?: number; height?: number }) {
-    if (!this.data.asset_id) return;
-    return `https://image.mux.com/${this.data.asset_id}/thumbnail.jpg?width=${width}&height=${height}`;
+  function addKeyword(value: string) {
+    if (!data.keywords) return;
+    data.keywords.push(value);
+    setData("keywords", data.keywords);
   }
+
+  return {
+    data,
+    updates,
+    update,
+    save,
+    refetch,
+    onDelete,
+    deleteEverywhere,
+    thumbnailUrl,
+    addKeyword,
+  };
 }

@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { A, action } from "@solidjs/router";
-import { Save, Sparkles, Trash2, Upload, VideoIcon } from "lucide-solid";
+import { Save, Sparkles, Trash, Trash2, Upload, VideoIcon } from "lucide-solid";
 
-import { supabase } from "@/libs/supabase/client";
+import { supabase } from "@/libs/services/supabase/client";
 import {
   For,
   Suspense,
@@ -25,15 +25,16 @@ import {
 } from "@/components/ui/textfield";
 import { Separator } from "@/components/ui/separator";
 import MuxPlayer from "@/components/muxPlayer";
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PageTitle, { pageTitle } from "@/components/pageTitle";
 
 import { confirmWithDailog } from "@/components/confirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TextArea } from "@/components/ui/textarea";
-import { getTranscript } from "@/libs/assemblyai/utils";
-import { VideoData, Video } from "@/libs/models/video";
+import { getTranscript } from "@/libs/services/assemblyai/utils";
+import { Video, createVideo } from "@/libs/models/video";
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
+import { Tables } from "@/libs/services/supabase/types";
 
 // async function synchoniseWithMux() {
 //   "use server";
@@ -61,7 +62,7 @@ export default function Videos() {
   const [videos, { refetch }] = createResource(async () => {
     const vids = await supabase.from("videos").select().neq("asset_id", null);
     return vids.data?.map((video) => {
-      const vid = new Video(video);
+      const vid = createVideo(video);
       vid.onDelete.push(() => {
         refetch();
         console.log("deleted" + video.title);
@@ -119,10 +120,9 @@ export default function Videos() {
   );
 }
 
-function VideoListItem<T extends VideoData>({ video }: { video: Video<T> }) {
+function VideoListItem({ video }: { video: Video }) {
   const [open, setOpen] = createSignal(false);
   let hasChanged = false;
-
   const handleChange = () => (hasChanged = true);
 
   const setSheetOpen = async (value: boolean) => {
@@ -136,14 +136,13 @@ function VideoListItem<T extends VideoData>({ video }: { video: Video<T> }) {
       hasChanged = !confirmed;
     }
     if (!hasChanged) setOpen(value);
-    if (open()) video.fetchData();
+    if (open()) video.refetch();
   };
 
   const saveVideo = action(async (data: FormData) => {
     data.forEach((value, key) => {
       if (!(key in video.data)) return;
-      // @ts-ignore
-      video.setData(key, String(value));
+      video.update(key as keyof Tables<"videos">, String(value));
     }, video.data.id?.toString());
 
     console.log(video.data.id);
@@ -168,7 +167,7 @@ function VideoListItem<T extends VideoData>({ video }: { video: Video<T> }) {
       { variant: "destructive" }
     );
     if (confirmed) {
-      video.delete();
+      video.deleteEverywhere();
       setOpen(false);
     }
   }
@@ -180,6 +179,11 @@ function VideoListItem<T extends VideoData>({ video }: { video: Video<T> }) {
 
   const [transcript, setTranscript] = createSignal<string | null>(null);
   getTranscript(video.data.transcript_id!).then((t) => setTranscript(t.text!));
+
+  const [newKeyword, setNewKeyword] = createSignal<string>("");
+  function addKeyword() {
+    if (newKeyword()) video.addKeyword(newKeyword()!);
+  }
 
   return (
     <Sheet open={open()} onOpenChange={setSheetOpen}>
@@ -201,7 +205,7 @@ function VideoListItem<T extends VideoData>({ video }: { video: Video<T> }) {
           </p>
         </div>
       </SheetTrigger>
-      <SheetContent class="flex flex-col gap-4 w-[400px] overflow-y-scroll">
+      <SheetContent class="flex flex-col gap-4 w-[400px] overflow-y-scroll pb-0">
         <SheetHeader>
           <SheetTitle>Bewerk video</SheetTitle>
           <SheetDescription>
@@ -244,7 +248,38 @@ function VideoListItem<T extends VideoData>({ video }: { video: Video<T> }) {
             />
           </TextFieldRoot>
 
-          <div class="flex gap-4">
+          <div class="flex flex-col gap-2">
+            {video.data.keywords?.map((keyword, i) => {
+              return (
+                <div class="text-sm flex gap-2">
+                  <TextFieldRoot class="grow">
+                    <TextField
+                      name={"keyword-" + i}
+                      value={keyword}
+                    ></TextField>
+                  </TextFieldRoot>
+                  <Button variant="ghost" size="icon">
+                    <Trash2 size="1.25em" />
+                  </Button>
+                </div>
+              );
+            })}
+            <div class="text-sm flex gap-2">
+              <TextFieldRoot
+                class="grow"
+                value={newKeyword()}
+                onChange={setNewKeyword}
+                onSubmit={addKeyword}
+              >
+                <TextField placeholder="Trefwoord toevoegen..."></TextField>
+              </TextFieldRoot>
+              <Button variant="secondary" size="icon" onClick={addKeyword}>
+                <Save size="1.25em" />
+              </Button>
+            </div>
+          </div>
+
+          <div class="flex gap-4 sticky bottom-0 border-t py-4 bg-background">
             <Button
               type="submit"
               class="flex items-center gap-1"

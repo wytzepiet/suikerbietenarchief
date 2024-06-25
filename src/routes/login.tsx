@@ -6,8 +6,8 @@ import {
   TextFieldLabel,
   TextFieldRoot,
 } from "@/components/ui/textfield";
-import { supabase } from "@/libs/supabase/client";
-import { setUser } from "@/libs/supabase/user";
+import { supabase } from "@/libs/services/supabase/client";
+import { setUser } from "@/libs/services/supabase/user";
 import { action, useNavigate } from "@solidjs/router";
 import { createSignal } from "solid-js";
 

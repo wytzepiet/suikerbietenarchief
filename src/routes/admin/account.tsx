@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { user } from "@/libs/supabase/user";
+import { user } from "@/libs/services/supabase/user";
 import { action, useNavigate } from "@solidjs/router";
 import {
   AlertDialog,
@@ -19,7 +19,7 @@ import {
   TextFieldLabel,
   TextFieldRoot,
 } from "@/components/ui/textfield";
-import { supabase } from "@/libs/supabase/client";
+import { supabase } from "@/libs/services/supabase/client";
 import { LogOut } from "lucide-solid";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PageTitle, { pageTitle } from "@/components/pageTitle";
