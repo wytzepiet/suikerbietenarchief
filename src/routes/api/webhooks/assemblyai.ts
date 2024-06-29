@@ -1,10 +1,10 @@
 "use server";
 
-import { getTranscript } from "@/libs/services/assemblyai";
 import { supabase } from "@/libs/services/supabase/server";
 import { generateMetadata } from "@/libs/services/openai";
 import { json } from "@solidjs/router";
 import { APIEvent } from "node_modules/@solidjs/start/dist/server";
+import { getTranscript } from "@/libs/services/assemblyai";
 
 export async function POST({ request }: APIEvent) {
   try {

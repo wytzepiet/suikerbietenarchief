@@ -23,7 +23,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { TextArea } from "@/components/ui/textarea";
 import { action } from "@solidjs/router";
-import { Status, Upload, createUpload } from "@/libs/models/upload";
+import { Status, Upload, createUpload } from "@/libs/datamodels/upload";
 import PageTitle, { pageTitle } from "@/components/pageTitle";
 
 export default function UploadVideos() {

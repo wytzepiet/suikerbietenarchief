@@ -1,33 +1,34 @@
 import { cn } from "@/libs/cn";
+import { Video } from "@/libs/datamodels/video";
 import "@mux/mux-player";
+import { Suspense } from "solid-js";
 
 interface MuxPlayerProps {
-  playbackId: string;
+  video: Video;
   class?: string;
   style?: string;
   autoplay?: boolean;
   muted?: boolean;
-  aspectRatio?: string | null;
 }
 
 export default function MuxPlayer(props: MuxPlayerProps) {
   if (props.autoplay) props.muted = true;
-  const aspectRatio = props.aspectRatio?.replace(":", " / ");
+  const aspectRatio = () =>
+    props.video.data.aspect_ratio?.replace(":", " / ") ?? "16 / 9";
 
   return (
     <div
       class={cn("relative", props.class)}
-      style={aspectRatio ? `aspect-ratio: ${aspectRatio}` : ""}
+      style={`aspect-ratio: ${aspectRatio()}`}
     >
       {/* @ts-ignore */}
       <mux-player
-        class={aspectRatio ? "absolute inset-0" : ""}
-        playback-id={props.playbackId}
+        class="absolute inset-0 object-cover"
+        playback-id={props.video.data.playback_id}
         autoplay={props.autoplay}
         loop={props.autoplay}
         muted={props.muted}
         style={props.style}
-        aspectRatio={props.aspectRatio}
       />
     </div>
   );

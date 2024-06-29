@@ -54,7 +54,7 @@ export type Database = {
           edited_by: string | null
           generate_description: boolean | null
           id: number
-          keywords: string[] | null
+          keywords: string[]
           playback_id: string | null
           prompt_hint: string | null
           status: string | null
@@ -73,7 +73,7 @@ export type Database = {
           edited_by?: string | null
           generate_description?: boolean | null
           id?: number
-          keywords?: string[] | null
+          keywords?: string[]
           playback_id?: string | null
           prompt_hint?: string | null
           status?: string | null
@@ -92,7 +92,7 @@ export type Database = {
           edited_by?: string | null
           generate_description?: boolean | null
           id?: number
-          keywords?: string[] | null
+          keywords?: string[]
           playback_id?: string | null
           prompt_hint?: string | null
           status?: string | null

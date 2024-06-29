@@ -1,88 +1,41 @@
 import { Button } from "@/components/ui/button";
-import { A, action } from "@solidjs/router";
-import { Save, Sparkles, Trash, Trash2, Upload, VideoIcon } from "lucide-solid";
+import { A } from "@solidjs/router";
+import { Plus, Save, Sparkles, Trash2, Upload, VideoIcon } from "lucide-solid";
 
 import { supabase } from "@/libs/services/supabase/client";
-import {
-  For,
-  Suspense,
-  createEffect,
-  createResource,
-  createSignal,
-} from "solid-js";
+import { For, Show, createSignal } from "solid-js";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
   TextField,
+  TextFieldErrorMessage,
   TextFieldLabel,
   TextFieldRoot,
 } from "@/components/ui/textfield";
 import { Separator } from "@/components/ui/separator";
 import MuxPlayer from "@/components/muxPlayer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PageTitle, { pageTitle } from "@/components/pageTitle";
-
 import { confirmWithDailog } from "@/components/confirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TextArea } from "@/components/ui/textarea";
-import { getTranscript } from "@/libs/services/assemblyai/utils";
-import { Video, createVideo } from "@/libs/models/video";
+import { Video, createVideo } from "@/libs/datamodels/video";
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
-import { Tables } from "@/libs/services/supabase/types";
+import { toast } from "solid-sonner";
+import { Toaster } from "@/components/ui/sonner";
+import { TransitionGroup } from "solid-transition-group";
+import { searchVideos } from "@/libs/services/algolia";
+import { createVideoList } from "@/libs/datamodels/videoList";
 
-// async function synchoniseWithMux() {
-//   "use server";
-//   const muxVideos = await mux.video.assets.list();
-//   if (!muxVideos) return;
-//   const vids = .from("videos");
-
-//   muxVideos.data.forEach(async (muxVideo) => {
-//     const { data, error } = await vids.select().eq("asset_id", muxVideo.id);
-//     if (error) {
-//       console.error("Error fetching video document:", error);
-//     }
-//     console.log("data: ", data);
-//     if (data?.length === 0) {
-//       const response = await vids.insert({
-//         asset_id: muxVideo.id,
-//         playback_id: muxVideo.playback_ids?.at(0)?.id,
-//       });
-//       console.log("response: ", response);
-//     }
-//   });
-// }
+const videos = createVideoList();
 
 export default function Videos() {
-  const [videos, { refetch }] = createResource(async () => {
-    const vids = await supabase.from("videos").select().neq("asset_id", null);
-    return vids.data?.map((video) => {
-      const vid = createVideo(video);
-      vid.onDelete.push(() => {
-        refetch();
-        console.log("deleted" + video.title);
-      });
-      return vid;
-    });
-  });
-
-  createEffect(() => {
-    videos()?.forEach(async (video) => {
-      if (!video.data.transcript_id) {
-        console.log("No transcript ID found for video: ", video.data.title);
-        return;
-      }
-      const transcript = await getTranscript(video.data.transcript_id ?? "");
-      if (!transcript.text)
-        console.log("No transcript text found for video: ", video.data.title);
-      // if (video.playback_id) transcribe(video.playback_id);
-    });
-  });
+  videos.fetchVideos();
 
   return (
     <main>
@@ -101,19 +54,21 @@ export default function Videos() {
         </div>
       </CardHeader>
       <CardContent class="flex flex-col gap-4">
-        <TextFieldRoot>
+        <TextFieldRoot onChange={videos.search}>
           <TextField placeholder="Zoek video's" />
         </TextFieldRoot>
         <div class="flex flex-col gap-1">
-          <Suspense
-            fallback={Array.from({ length: 9 }).map((_, i) => (
+          <For each={videos.videos}>
+            {(video) => <VideoListItem video={video} />}
+          </For>
+          <Show when={videos.loading}>
+            {Array.from({ length: 9 }).map((_, i) => (
               <Skeleton delay={i * 100} class="h-[50px] p-1 box-content" />
             ))}
-          >
-            <For each={videos()}>
-              {(video) => <VideoListItem video={video} />}
-            </For>
-          </Suspense>
+          </Show>
+          <Show when={!videos.loading && !videos.videos.length}>
+            <p class="py-4 text-muted-foreground">Geen video's gevonden.</p>
+          </Show>
         </div>
       </CardContent>
     </main>
@@ -122,40 +77,31 @@ export default function Videos() {
 
 function VideoListItem({ video }: { video: Video }) {
   const [open, setOpen] = createSignal(false);
-  let hasChanged = false;
-  const handleChange = () => (hasChanged = true);
 
-  const setSheetOpen = async (value: boolean) => {
-    if (!open()) hasChanged = false;
-    if (hasChanged) {
-      const confirmed = await confirmWithDailog({
-        title: "Weet je zeker dat je wilt sluiten?",
-        description: "Je hebt nog niet opgeslagen wijzigingen.",
-        confirm: "Sluiten",
-      });
-      hasChanged = !confirmed;
+  const canClose = async () => {
+    if (!video.hasChanged()) return true;
+    return await confirmWithDailog({
+      title: "Weet je zeker dat je wilt sluiten?",
+      description: "Je hebt nog niet opgeslagen wijzigingen.",
+      confirm: "Sluiten",
+    });
+  };
+  const toggleSheet = async (value: boolean) => {
+    if (value) {
+      setOpen(true);
+      video.refetch();
+    } else if (await canClose()) {
+      setOpen(false);
+      video.update({ ...video.data });
     }
-    if (!hasChanged) setOpen(value);
-    if (open()) video.refetch();
   };
 
-  const saveVideo = action(async (data: FormData) => {
-    data.forEach((value, key) => {
-      if (!(key in video.data)) return;
-      video.update(key as keyof Tables<"videos">, String(value));
-    }, video.data.id?.toString());
-
-    console.log(video.data.id);
-
-    const vid = await supabase
-      .from("videos")
-      .update(video.data)
-      .eq("id", video.data.id!)
-      .select()
-      .single();
-
+  const saveVideo = () => {
+    video.saveUpdates();
+    const filtered = video.updates.keywords.filter((k) => k !== "!REMOVED!");
+    video.update("keywords", filtered);
     setOpen(false);
-  }, video.data.id?.toString());
+  };
 
   async function deleteVideo() {
     const confirmed = await confirmWithDailog(
@@ -166,10 +112,10 @@ function VideoListItem({ video }: { video: Video }) {
       },
       { variant: "destructive" }
     );
-    if (confirmed) {
-      video.deleteEverywhere();
-      setOpen(false);
-    }
+    if (!confirmed) return;
+    await video.deleteEverywhere();
+    videos.fetchVideos();
+    setOpen(false);
   }
 
   function secondsToHms(d: number = 0) {
@@ -177,16 +123,8 @@ function VideoListItem({ video }: { video: Video }) {
     return hms.map((t) => Math.floor(t).toString().padStart(2, "0")).join(":");
   }
 
-  const [transcript, setTranscript] = createSignal<string | null>(null);
-  getTranscript(video.data.transcript_id!).then((t) => setTranscript(t.text!));
-
-  const [newKeyword, setNewKeyword] = createSignal<string>("");
-  function addKeyword() {
-    if (newKeyword()) video.addKeyword(newKeyword()!);
-  }
-
   return (
-    <Sheet open={open()} onOpenChange={setSheetOpen}>
+    <Sheet open={open()} onOpenChange={toggleSheet}>
       <SheetTrigger class="flex gap-4 items-center p-1 hover:bg-muted rounded-md">
         <ImageRoot class="h-12 w-12 rounded">
           <ImageFallback>
@@ -205,100 +143,134 @@ function VideoListItem({ video }: { video: Video }) {
           </p>
         </div>
       </SheetTrigger>
-      <SheetContent class="flex flex-col gap-4 w-[400px] overflow-y-scroll pb-0">
+      <SheetContent class="flex flex-col gap-8 overflow-y-scroll pb-0">
+        <Toaster class="bottom-[50px]" />
+
         <SheetHeader>
           <SheetTitle>Bewerk video</SheetTitle>
-          <SheetDescription>
-            {/* Video wordt gepubliceerd wanneer de upload klaar is. */}
-          </SheetDescription>
+          <div class="border rounded overflow-hidden shrink-0">
+            <MuxPlayer video={video} />
+          </div>
         </SheetHeader>
 
-        <div class="border rounded overflow-hidden shrink-0">
-          <MuxPlayer
-            playbackId={video.data.playback_id ?? ""}
-            aspectRatio={video.data.aspect_ratio}
-          />
+        <TextFieldRoot
+          value={video.updates.title ?? ""}
+          onChange={(val) => video.update("title", val)}
+        >
+          <TextFieldLabel>Titel</TextFieldLabel>
+          <TextField></TextField>
+        </TextFieldRoot>
+
+        <TextFieldRoot
+          value={video.updates.description ?? ""}
+          onChange={(val) => video.update("description", val)}
+        >
+          <TextFieldLabel class="flex justify-between items-end">
+            Beschrijving
+            <Button size="sm" variant="ghost" class="self-start">
+              <Sparkles size="1.25em" class="mr-1" /> genereren met AI
+            </Button>
+          </TextFieldLabel>
+          <TextArea autoResize />
+        </TextFieldRoot>
+
+        <div class="flex flex-col gap-1">
+          <p class="text-sm font-medium">Trefwoorden</p>
+          <Keywords video={video} />
         </div>
-        <form class="flex flex-col gap-8" action={saveVideo} method="post">
-          <TextFieldRoot>
-            <TextFieldLabel>Titel</TextFieldLabel>
-            <TextField
-              name="title"
-              value={video.data.title ?? ""}
-              onInput={handleChange}
-            ></TextField>
-          </TextFieldRoot>
 
-          <TextFieldRoot>
-            <TextFieldLabel class="flex justify-between items-end">
-              Beschrijving{" "}
-              <Button
-                size="sm"
-                variant="ghost"
-                type="submit"
-                class="self-start"
-              >
-                <Sparkles size="1.25em" class="mr-1" /> genereren met AI
-              </Button>
-            </TextFieldLabel>
-            <TextArea
-              autoResize
-              name="description"
-              value={video.data.description ?? ""}
-            />
-          </TextFieldRoot>
+        <div class="flex gap-4 sticky bottom-0 border-t py-4 bg-background">
+          <Button class="flex items-center gap-1" onClick={saveVideo}>
+            <Save size="1.25em" />
+            Opslaan
+          </Button>
+          <Separator orientation="vertical" />
+          <Button
+            variant="outline"
+            class="self-start flex items-center gap-1"
+            onclick={deleteVideo}
+          >
+            <Trash2 size="1.25em" /> Verwijderen
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
 
-          <div class="flex flex-col gap-2">
-            {video.data.keywords?.map((keyword, i) => {
-              return (
-                <div class="text-sm flex gap-2">
-                  <TextFieldRoot class="grow">
-                    <TextField
-                      name={"keyword-" + i}
-                      value={keyword}
-                    ></TextField>
+function Keywords({ video }: { video: Video }) {
+  const [newKeyword, setNewKeyword] = createSignal("");
+
+  const addNewKeyword = () => {
+    if (!newKeyword()) return;
+    video.update("keywords", video.updates.keywords.length, newKeyword());
+    setNewKeyword("");
+  };
+
+  return (
+    <div class="flex flex-col gap-2">
+      <TransitionGroup>
+        <For each={Array.from({ length: video.updates.keywords.length })}>
+          {(_, i) => {
+            const keyword = () => video.updates.keywords[i()];
+            const update = (val: string) => video.update("keywords", i(), val);
+            const remove = () => {
+              const lastValue = keyword();
+              toast(keyword(), {
+                description: "Trefwoord verwijderd.",
+                cancel: {
+                  label: "Ongedaan maken",
+                  onClick: () => update(lastValue),
+                },
+              });
+              update("!REMOVED!");
+            };
+            [
+              "listen",
+              "watch",
+              "read",
+              "                                                ",
+            ];
+            return (
+              <Show when={keyword() !== "!REMOVED!"}>
+                <div class="text-sm flex gap-2 transition-all [&.s-exit-to]:opacity-0">
+                  <TextFieldRoot
+                    class="grow"
+                    value={keyword()}
+                    onChange={update}
+                    validationState={keyword() ? "valid" : "invalid"}
+                  >
+                    <TextField />
+                    <TextFieldErrorMessage>
+                      Vul een waarde in
+                    </TextFieldErrorMessage>
                   </TextFieldRoot>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="outline" size="icon" onClick={remove}>
                     <Trash2 size="1.25em" />
                   </Button>
                 </div>
-              );
-            })}
-            <div class="text-sm flex gap-2">
-              <TextFieldRoot
-                class="grow"
-                value={newKeyword()}
-                onChange={setNewKeyword}
-                onSubmit={addKeyword}
-              >
-                <TextField placeholder="Trefwoord toevoegen..."></TextField>
-              </TextFieldRoot>
-              <Button variant="secondary" size="icon" onClick={addKeyword}>
-                <Save size="1.25em" />
-              </Button>
-            </div>
-          </div>
+              </Show>
+            );
+          }}
+        </For>
 
-          <div class="flex gap-4 sticky bottom-0 border-t py-4 bg-background">
-            <Button
-              type="submit"
-              class="flex items-center gap-1"
-              onClick={() => setOpen(false)}
-            >
-              <Save size="1.25em" />
-              Opslaan
-            </Button>
-            <Separator orientation="vertical" />
-            <Button
-              variant="destructive"
-              class="self-start flex items-center gap-1"
-              onclick={deleteVideo}
-            >
-              <Trash2 size="1.25em" /> Verwijderen
-            </Button>
-          </div>
-        </form>
-      </SheetContent>
-    </Sheet>
+        <div class="text-sm flex gap-2 transition-all">
+          <TextFieldRoot
+            class="grow"
+            value={newKeyword()}
+            onChange={setNewKeyword}
+            onkeydown={(e: KeyboardEvent) =>
+              e.key === "Enter" && addNewKeyword()
+            }
+          >
+            <TextField placeholder="Trefwoord toevoegen..."></TextField>
+          </TextFieldRoot>
+
+          <Button variant="secondary" size="icon" onClick={addNewKeyword}>
+            <Plus size="1.25em" />
+          </Button>
+        </div>
+      </TransitionGroup>
+    </div>
   );
 }

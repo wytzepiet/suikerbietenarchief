@@ -1,6 +1,6 @@
 "use server";
 
-import { mux } from "@/libs/services/mux";
+import { muxClient } from "@/libs/services/mux";
 import { supabase } from "@/libs/services/supabase/server";
 import { transcribe } from "@/libs/services/assemblyai";
 import { APIEvent } from "node_modules/@solidjs/start/dist/server";
@@ -16,7 +16,10 @@ export async function POST({ request }: APIEvent) {
     // // const payload = await request.json();
     // const body = JSON.stringify(payload, null, 2);
     // console.log('Received Mux webhook:', body);
-    const hook = mux.webhooks.unwrap(await request.text(), request.headers);
+    const hook = muxClient().webhooks.unwrap(
+      await request.text(),
+      request.headers
+    );
 
     console.log("hook: ", hook.type);
 

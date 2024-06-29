@@ -2,11 +2,12 @@ import AnimatedText from "@/components/animatedText";
 import ImageCloud from "@/components/imageCloud";
 import MuxPlayer from "@/components/muxPlayer";
 import { TextField, TextFieldRoot } from "@/components/ui/textfield";
-import inView from "@/libs/utils/inView";
-import parallax from "@/libs/utils/parallax";
 import { ChevronRight, Search } from "lucide-solid";
 import { createSignal, onMount } from "solid-js";
 import timelineStyle from "@/libs/timeline.module.css";
+import "@mux/mux-player";
+import inView from "@/libs/utils/inView";
+import parallax from "@/libs/utils/parallax";
 
 const timeline = [
   {
@@ -73,11 +74,14 @@ export default function Index() {
       >
         <div class="absolute inset-0 blur-[--blur]" use:parallax={0.4}>
           <div class="absolute inset-0 overflow-hidden">
-            <MuxPlayer
-              playbackId="o01EPwa914Z4SnGt2E527dU02L5gL69Pb25yvHI9R7cCA"
-              class="absolute inset-0"
-              style="--controls: none; --media-object-fit: cover"
+            {/* @ts-ignore */}
+            <mux-player
+              class="absolute inset-0 object-cover"
+              playback-id="o01EPwa914Z4SnGt2E527dU02L5gL69Pb25yvHI9R7cCA"
               autoplay
+              loop
+              muted
+              style="--controls: none; --media-object-fit: cover"
             />
           </div>
           <div class="absolute inset-0 bg-gradient-to-t from-background to-transparent" />

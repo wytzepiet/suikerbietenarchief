@@ -1,8 +1,7 @@
-import { createSignal, createUniqueId, on, onCleanup } from "solid-js";
+import { createUniqueId } from "solid-js";
 import { supabase } from "../services/supabase/client";
-import { Upload as MuxUpload } from "@mux/mux-node/resources/video/uploads.mjs";
 import { UpChunk } from "@mux/upchunk";
-import { SetStoreFunction, createStore } from "solid-js/store";
+import { createStore } from "solid-js/store";
 import { Tables } from "../services/supabase/types";
 import { PostgrestResponse } from "@supabase/supabase-js";
 import { createMuxUpload } from "../services/mux";
@@ -10,7 +9,7 @@ import { createMuxUpload } from "../services/mux";
 export type Status = "idle" | "uploading" | "done" | "error" | "cancelled";
 // export type Upload = ReturnType<typeof createUpload>;
 
-const ref = supabase.from("uploads");
+const ref = () => supabase.from("uploads");
 
 const defaultState = {
   error: "",
@@ -48,7 +47,7 @@ export function createUpload(file: File) {
 
     setData("upload_id", muxUpload.id);
     onCancel.unshift(async () => {
-      ref.delete().eq("upload_id", muxUpload.id).select();
+      ref().delete().eq("upload_id", muxUpload.id).select();
     });
 
     setState("status", "uploading");
@@ -67,7 +66,7 @@ export function createUpload(file: File) {
 
   async function saveToDatabase() {
     console.log("saving upload", data);
-    ref.upsert(data).select().then(handleRepsonse);
+    ref().upsert(data).select().then(handleRepsonse);
   }
 
   return {

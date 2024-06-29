@@ -6,7 +6,7 @@
     "build": "vinxi build",
     "start": "vinxi start",
     "version": "vinxi version",
-    "supatypes": "supabase gen types typescript --project-id whzorrlwxnqyinejflbi > src/libs/supabase/types.ts",
+    "supatypes": "supabase gen types typescript --project-id whzorrlwxnqyinejflbi > src/libs/services/supabase/types.ts",
     "ngrok": "ngrok http --domain=shortly-fit-leopard.ngrok-free.app 3000"
   },
   "dependencies": {
@@ -19,6 +19,7 @@
     "@solidjs/router": "^0.13.5",
     "@solidjs/start": "^1.0.1",
     "@supabase/supabase-js": "^2.43.4",
+    "algoliasearch": "^4.23.3",
     "assemblyai": "^4.5.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -26,6 +27,8 @@
     "openai": "^4.51.0",
     "shadcn-solid": "^0.7.3",
     "solid-js": "^1.8.17",
+    "solid-sonner": "^0.2.8",
+    "solid-transition-group": "^0.2.3",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vinxi": "^0.3.11"
