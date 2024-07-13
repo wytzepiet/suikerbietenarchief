@@ -15,6 +15,7 @@ export default function parallax(el: HTMLElement, speed: () => number) {
   const center = () => window.innerHeight / 2 + initialOffset;
   const offsetFromCenter = () => rect.top + rect.height / 2 - center() - offset;
   const getOffset = () => offsetFromCenter() * (speed() - 1);
+
   function getThresholds() {
     if (speed() < 1) return { top: -20, bottom: window.innerHeight + 20 };
     return { top: offset, bottom: window.innerHeight + offset };

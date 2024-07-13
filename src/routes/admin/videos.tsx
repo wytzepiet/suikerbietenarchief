@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { A } from "@solidjs/router";
 import { Plus, Save, Sparkles, Trash2, Upload, VideoIcon } from "lucide-solid";
-
-import { supabase } from "@/libs/services/supabase/client";
 import { For, Show, createSignal } from "solid-js";
 import {
   Sheet,
@@ -61,7 +59,7 @@ export default function Videos() {
           <For each={videos.videos}>
             {(video) => <VideoListItem video={video} />}
           </For>
-          <Show when={videos.loading}>
+          <Show when={videos.loading()}>
             {Array.from({ length: 9 }).map((_, i) => (
               <Skeleton delay={i * 100} class="h-[50px] p-1 box-content" />
             ))}
@@ -133,7 +131,7 @@ function VideoListItem({ video }: { video: Video }) {
           <Image
             src={video.thumbnailUrl({ width: 100 })}
             alt={video.data.title ?? "Video thumbnail"}
-          ></Image>
+          />
         </ImageRoot>
 
         <div class="text-left">

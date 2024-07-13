@@ -1,35 +1,62 @@
-import inView from "@/libs/utils/inView";
-import styles from "./animatedtext.module.css";
-import { mergeProps, onMount } from "solid-js";
+import { ComponentProps, onMount } from "solid-js";
+import gsap from "gsap-trial/dist/gsap";
 
 interface Props {
   duration?: number;
   remote?: boolean;
   delay?: number;
-  children: string;
+  children: any;
+  class?: string;
 }
-const defaults = { duration: 1000, delay: 0 };
 
-export default function AnimatedText(props: Props) {
-  const merged = mergeProps(defaults, props);
+export default function AnimatedText(props: ComponentProps<"div"> & Props) {
+  const content = (
+    <div
+      class={"opacity-0 " + props.class}
+      style="clip-path: inset(0px 0px 0px 0px)"
+    >
+      {props.children}
+    </div>
+  ) as HTMLElement;
 
-  const words = merged.children.split(" ");
+  onMount(async () => {
+    const { SplitText } = await import("gsap-trial/SplitText");
+    await import("gsap-trial/dist/ScrollTrigger");
+    const split = new SplitText(content);
 
-  const content = words.map((word, i) => {
-    let el: HTMLElement | undefined;
-
-    onMount(() => {
-      el?.style.setProperty("transition-delay", `${merged.delay + i * 50}ms`);
-      el?.style.setProperty("transition-duration", `${merged.duration}ms`);
+    content.style.opacity = "1";
+    gsap.from(split.chars, {
+      duration: 1.5,
+      delay: (props.delay ?? 100) / 1000,
+      ease: "power4.out",
+      y: "1.2em",
+      clipPath: "inset(0 0 100% 0)",
+      stagger: 0.015,
+      scrollTrigger: {
+        trigger: content,
+        start: "top 80%",
+        end: "bottom 20%",
+      },
     });
-
-    return (
-      <span ref={el} class={"whitespace-break-spaces animated " + styles.word}>
-        {word + " "}
-      </span>
-    );
+    // const split = new SplitText(content);
+    // gsap.from(split.chars, {
+    //   duration: 1,
+    //   y: 100,
+    //   autoAlpha: 0,
+    //   stagger: 0.05,
+    //   scrollTrigger: content,
+    // });
   });
 
-  if (merged.remote) return content;
-  return <div use:inView>{content}</div>;
+  // setContent(new SplitText(props.children, { type: "words,chars" }));
+  // const merged = mergeProps(defaults, props);
+  // const tl = gsap.timeline({ delay: merged.delay });
+  // tl.from(content().chars, {
+  //   duration: merged.duration / 1000,
+  //   opacity: 0,
+  //   y: 20,
+  //   stagger: 0.02,
+  // });
+
+  return content;
 }

@@ -21,7 +21,14 @@ export default function App() {
           <Suspense>
             <ColorModeScript />
             <ColorModeProvider>
-              <div class="page">{props.children}</div>
+              <div id="smooth-wrapper">
+                <div
+                  id="smooth-content"
+                  class="page flex flex-col items-center"
+                >
+                  {props.children}
+                </div>
+              </div>
               <Toaster />
               <ConfirmDialog />
             </ColorModeProvider>

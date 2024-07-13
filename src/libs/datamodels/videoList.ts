@@ -11,10 +11,11 @@ export function createVideoList() {
   const [loading, setLoading] = createSignal(true);
 
   const fetchVideos = async (ids?: number[]) => {
-    const builder = ref().select().neq("asset_id", null);
-    if (ids) builder.in("id", ids);
+    const filterBuilder = ref().select().neq("asset_id", null);
+    if (ids) filterBuilder.in("id", ids);
 
-    const { data, error } = await builder;
+    const { data, error } = await filterBuilder;
+    setLoading(false);
     if (error) return console.error(error);
     setVideos(data.map(createVideo));
   };

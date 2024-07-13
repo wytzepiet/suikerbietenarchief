@@ -57,7 +57,7 @@ export default function Admin(props: RouteSectionProps) {
   });
 
   return (
-    <div class="p-4 flex flex-col items-center ">
+    <div class="p-4 flex flex-col items-center w-full">
       {user() && (
         <div class="w-[1000px] max-w-full flex flex-col gap-4">
           <div class="h-[50px]"></div>

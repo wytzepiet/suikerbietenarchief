@@ -3,7 +3,7 @@ import { Tables } from "../services/supabase/types";
 import { supabase } from "../services/supabase/client";
 import { PostgrestResponse } from "@supabase/supabase-js";
 import { saveAlgoliaVideo } from "../services/algolia";
-import { deleteTranscript } from "../services/assemblyai";
+// import { deleteTranscript } from "../services/assemblyai";
 import { deleteMuxVideo as deleteMuxVideo, getMuxInfo } from "../services/mux";
 import { toast } from "solid-sonner";
 import { Asset } from "@mux/mux-node/resources/video/assets.mjs";
@@ -48,8 +48,9 @@ export function createVideo(input: Data) {
       width?: number;
       height?: number;
       type?: "thumbnail" | "animated";
-    } = { type: "thumbnail" }
+    } = {}
   ) {
+    if (!params.type) params.type = "thumbnail";
     const url = new URL(
       `https://image.mux.com/${data.playback_id}/${params.type}.webp`
     );

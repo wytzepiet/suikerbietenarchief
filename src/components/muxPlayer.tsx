@@ -1,7 +1,6 @@
 import { cn } from "@/libs/cn";
 import { Video } from "@/libs/datamodels/video";
 import "@mux/mux-player";
-import { Suspense } from "solid-js";
 
 interface MuxPlayerProps {
   video: Video;
@@ -19,7 +18,7 @@ export default function MuxPlayer(props: MuxPlayerProps) {
   return (
     <div
       class={cn("relative", props.class)}
-      style={`aspect-ratio: ${aspectRatio()}`}
+      style={`aspect-ratio: ${aspectRatio()}; --media-accent-color: hsl(var(--muted-foreground))`}
     >
       {/* @ts-ignore */}
       <mux-player
