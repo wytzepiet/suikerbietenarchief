@@ -3,7 +3,7 @@ import { Tables } from "../services/supabase/types";
 import { supabase } from "../services/supabase/client";
 import { PostgrestResponse } from "@supabase/supabase-js";
 import { saveAlgoliaVideo } from "../services/algolia";
-// import { deleteTranscript } from "../services/assemblyai";
+import { deleteTranscript } from "../services/assemblyai";
 import { deleteMuxVideo as deleteMuxVideo, getMuxInfo } from "../services/mux";
 import { toast } from "solid-sonner";
 import { Asset } from "@mux/mux-node/resources/video/assets.mjs";
