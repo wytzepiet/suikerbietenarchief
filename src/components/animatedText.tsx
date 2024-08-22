@@ -1,5 +1,6 @@
-import { ComponentProps, onMount } from "solid-js";
+import { ComponentProps, mergeProps, onMount } from "solid-js";
 import gsap from "gsap-trial/dist/gsap";
+import { cn } from "@/libs/cn";
 
 interface Props {
   duration?: number;
@@ -7,12 +8,14 @@ interface Props {
   delay?: number;
   children: any;
   class?: string;
+  tweenVars?: gsap.TweenVars;
+  scrollTrigger?: ScrollTrigger.StaticVars | false;
 }
 
-export default function AnimatedText(props: ComponentProps<"div"> & Props) {
+export default function AnimatedText(props: Props) {
   const content = (
     <div
-      class={"opacity-0 " + props.class}
+      class={cn("opacity-0", props.class)}
       style="clip-path: inset(0px 0px 0px 0px)"
     >
       {props.children}
@@ -22,41 +25,30 @@ export default function AnimatedText(props: ComponentProps<"div"> & Props) {
   onMount(async () => {
     const { SplitText } = await import("gsap-trial/SplitText");
     await import("gsap-trial/dist/ScrollTrigger");
+
     const split = new SplitText(content);
 
+    gsap.from(
+      split.chars,
+      mergeProps(props.tweenVars, {
+        duration: 1.5,
+        delay: (props.delay ?? 100) / 1000,
+        ease: "power4.out",
+        y: "1.2em",
+        clipPath: "inset(0 0 100% 0)",
+        stagger: 0.01,
+        scrollTrigger:
+          props.scrollTrigger != false
+            ? mergeProps(props.scrollTrigger, {
+                trigger: content,
+                start: "top 80%",
+                end: "bottom 20%",
+              })
+            : undefined,
+      })
+    );
     content.style.opacity = "1";
-    gsap.from(split.chars, {
-      duration: 1.5,
-      delay: (props.delay ?? 100) / 1000,
-      ease: "power4.out",
-      y: "1.2em",
-      clipPath: "inset(0 0 100% 0)",
-      stagger: 0.015,
-      scrollTrigger: {
-        trigger: content,
-        start: "top 80%",
-        end: "bottom 20%",
-      },
-    });
-    // const split = new SplitText(content);
-    // gsap.from(split.chars, {
-    //   duration: 1,
-    //   y: 100,
-    //   autoAlpha: 0,
-    //   stagger: 0.05,
-    //   scrollTrigger: content,
-    // });
   });
-
-  // setContent(new SplitText(props.children, { type: "words,chars" }));
-  // const merged = mergeProps(defaults, props);
-  // const tl = gsap.timeline({ delay: merged.delay });
-  // tl.from(content().chars, {
-  //   duration: merged.duration / 1000,
-  //   opacity: 0,
-  //   y: 20,
-  //   stagger: 0.02,
-  // });
 
   return content;
 }

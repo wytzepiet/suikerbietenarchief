@@ -1,11 +1,14 @@
 import { MetaProvider, Title } from "@solidjs/meta";
-import { Router } from "@solidjs/router";
+import { A, Router, useLocation } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
 import { ConfirmDialog } from "./components/confirmDialog";
 import { Toaster } from "./components/ui/sonner";
 import { ColorModeProvider, ColorModeScript } from "@kobalte/core";
 import "./app.css";
+import { Card } from "./components/ui/card";
+import { buttonVariants } from "./components/ui/button";
+import { cn } from "./libs/cn";
 
 export default function App() {
   return (
@@ -13,30 +16,50 @@ export default function App() {
       root={(props) => (
         <MetaProvider>
           <Title>Suikerbietenarchief</Title>
-          <nav>
-            <a href="/">Index</a>
-            <a href="/test">About</a>
-          </nav>
 
-          <Suspense>
-            <ColorModeScript />
-            <ColorModeProvider>
-              <div id="smooth-wrapper">
-                <div
-                  id="smooth-content"
-                  class="page flex flex-col items-center"
-                >
-                  {props.children}
-                </div>
+          <ColorModeScript />
+          <ColorModeProvider>
+            <div class="fixed z-50 w-full flex justify-center pt-2 pointer-events-none">
+              <Card class="p-1 flex items-center pointer-events-auto">
+                <a href="/" class="hidden sm:block">
+                  <h1 class="px-4 text-lg">Nationaal Suikerbietenarchief</h1>
+                </a>
+                <NavItem href="/">Home</NavItem>
+                <NavItem href="/archief">Archief</NavItem>
+                <NavItem href="/kaart">Kaart</NavItem>
+                <NavItem href="/admin">Login</NavItem>
+              </Card>
+            </div>
+
+            <div id="smooth-wrapper">
+              <div id="smooth-content" class="page flex flex-col items-center">
+                <Suspense> {props.children} </Suspense>
               </div>
-              <Toaster />
-              <ConfirmDialog />
-            </ColorModeProvider>
-          </Suspense>
+            </div>
+
+            <Toaster />
+            <ConfirmDialog />
+          </ColorModeProvider>
         </MetaProvider>
       )}
     >
       <FileRoutes />
     </Router>
+  );
+}
+
+function NavItem(props: { href: string; children: any }) {
+  const location = useLocation();
+
+  const active = () => location.pathname === props.href;
+  const activeClass = () => (active() ? "" : "text-muted-foreground");
+
+  return (
+    <A
+      class={cn(buttonVariants({ variant: "ghost" }), activeClass())}
+      href={props.href}
+    >
+      {props.children}
+    </A>
   );
 }

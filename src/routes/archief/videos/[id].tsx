@@ -4,30 +4,69 @@ import { Video, createVideo } from "@/libs/datamodels/video";
 import { createVideoList } from "@/libs/datamodels/videoList";
 import { supabase } from "@/libs/services/supabase/client";
 import { A, useParams } from "@solidjs/router";
-import { For, Show, createEffect, createSignal } from "solid-js";
+import {
+  For,
+  Show,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+} from "solid-js";
+import gsap from "gsap-trial/dist/gsap";
+
+export const [video, setVideo] = createSignal<Video | null>(null);
 
 export default function VideoScreen() {
   const params = useParams();
 
-  const [video, setVideo] = createSignal<Video | undefined>(undefined);
-
-  createEffect(() => {
-    setVideo(undefined);
-    const req = supabase.from("videos").select().eq("id", params.id);
-    req.then(({ data }) => data && setVideo(createVideo(data[0])));
-  });
-
   const recommendations = createVideoList();
   recommendations.fetchVideos();
 
-  return (
-    <main class="w-[800px] max-w-full flex flex-col gap-4 pt-[40px] px-4">
-      <Card class="overflow-hidden">
-        {video()?.data && <MuxPlayer video={video()!} />}
-      </Card>
+  if (!video()?.data) {
+    const query = supabase.from("videos").select().eq("id", params.id);
+    query.then(({ data, error }) => {
+      if (error) throw error;
+      setVideo(createVideo(data[0]));
+    });
+  }
+  onCleanup(() => setVideo(null));
 
-      <div>
-        <h1 class="text-3xl font-medium">{video()?.data.title}</h1>
+  let canPlay = false;
+  createEffect(() => {
+    if (video()?.data) {
+      setTimeout(() => {
+        const player = document.querySelector("mux-player");
+        player?.addEventListener("canplay", () => (canPlay = true));
+      }, 1);
+    }
+  });
+
+  onMount(() => {
+    gsap.from(".video-info > *", {
+      duration: 1.5,
+      ease: "power2.out",
+      y: "1.2em",
+      opacity: 0,
+      stagger: 0.1,
+    });
+  });
+
+  return (
+    <main
+      id="main"
+      class="w-[800px] max-w-full flex flex-col gap-4 pt-[80px] px-4"
+      style={{ opacity: video()?.data ? 1 : 0 }}
+    >
+      <div class="video-info">
+        <Card id="video" class="fade-in overflow-hidden">
+          <Show when={video()?.data}>
+            <MuxPlayer video={video()!} />{" "}
+          </Show>
+          <Show when={!video()?.data}>
+            <img src={video()?.thumbnailUrl()} alt="thumbnail" />
+          </Show>
+        </Card>
+        <h1 class="text-3xl font-medium mt-8 mb-2">{video()?.data.title}</h1>
         <p class="text-muted-foreground">{video()?.data.description}</p>
       </div>
 

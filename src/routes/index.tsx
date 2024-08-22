@@ -5,6 +5,7 @@ import { createSignal, onCleanup, onMount } from "solid-js";
 import timelineStyle from "@/libs/timeline.module.css";
 import "@mux/mux-player";
 import inView from "@/libs/utils/inView";
+import Page from "@/components/page";
 
 const timeline = [
   {
@@ -53,15 +54,10 @@ const timeline = [
 
 export default function Index() {
   let [blur, setBlur] = createSignal(0);
-  onMount(async () => {
-    const { ScrollTrigger } = await import("gsap-trial/ScrollTrigger");
-    const { ScrollSmoother } = await import("gsap-trial/ScrollSmoother");
 
-    ScrollSmoother.create({
-      smooth: 1, // how long (in seconds) it takes to "catch up" to the native scroll position
-      effects: true, // looks for data-speed and data-lag attributes on elements
-      smoothTouch: 0.1, // much shorter smoothing time on touch devices (default is NO smoothing on touch devices)
-    });
+  onMount(async () => {
+    const { gsap } = await import("gsap-trial");
+    const { ScrollTrigger } = await import("gsap-trial/ScrollTrigger");
 
     ScrollTrigger.create({
       trigger: ".blurrer",
@@ -72,7 +68,12 @@ export default function Index() {
     });
 
     document.querySelector("mux-player")?.addEventListener("canplay", () => {
-      gsap.to("mux-player", { duration: 3, ease: "power2.in", opacity: 1 });
+      gsap.to("mux-player", { duration: 2, opacity: 1 });
+    });
+    gsap.from(".blurrer", {
+      duration: 2,
+      scale: 1.3,
+      ease: "expo.out",
     });
 
     gsap.from(".searchbar", {
@@ -81,21 +82,16 @@ export default function Index() {
       delay: 1,
       ease: "power3.out",
       y: 40,
-      scrollTrigger: {
-        trigger: ".searchbar",
-        start: "top 80%",
-        end: "bottom 20%",
-      },
     });
   });
 
   return (
-    <main class="flex flex-col items-center w-full">
+    <Page class="flex flex-col items-center w-full" hideUntilMounted>
       <div
-        class="blurrer h-screen w-full flex flex-col justify-center items-center relative"
+        class="blurrer h-screen w-full flex flex-col justify-end items-center relative"
         style={`--blur: ${blur()}px;`}
       >
-        <div data-speed="0.3" class="absolute inset-0 blur-[--blur]">
+        <div data-speed="0.1" class="absolute inset-0 blur-[--blur]">
           <div class="absolute inset-0 overflow-hidden">
             {/* @ts-ignore */}
             <mux-player
@@ -113,13 +109,19 @@ export default function Index() {
           </div>
           <div class="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
         </div>
-        <div class="relative flex flex-col items-center text-center" use:inView>
+        <div
+          class="relative flex flex-col items-start w-full px-8 pb-20 max-w-[1500px]"
+          use:inView
+        >
           <h2 class="text-6xl font-medium">
-            <AnimatedText remote>Nationaal</AnimatedText>
+            <AnimatedText scrollTrigger={false} remote>
+              Nationaal
+            </AnimatedText>
           </h2>
-          <h1 class="text-9xl font-medium">
+          <h1 class="text-8xl font-medium">
             <AnimatedText
-              class="flex flex-wrap justify-center"
+              class="flex flex-wrap"
+              scrollTrigger={false}
               remote
               delay={200}
             >
@@ -128,8 +130,8 @@ export default function Index() {
               <span>Archief</span>
             </AnimatedText>
           </h1>
-          <h2 class="text-4xl font-light text-muted-foreground">
-            <AnimatedText remote delay={400}>
+          <h2 class="text-4xl font-light text-foreground/50">
+            <AnimatedText remote scrollTrigger={false} delay={400}>
               Uit trots op ons erfgoed
             </AnimatedText>
           </h2>
@@ -157,10 +159,8 @@ export default function Index() {
       <div class="h-[70vh]"></div>
 
       <ImageCloud>
-        <h1 class="text-9xl font-medium max-w-xl" use:inView>
-          <AnimatedText remote>
-            Ontdek het verhaal van de suikerbiet
-          </AnimatedText>
+        <h1 class="text-8xl font-medium max-w-xl" use:inView>
+          <AnimatedText>Ontdek het verhaal van de suikerbiet</AnimatedText>
         </h1>
       </ImageCloud>
 
@@ -196,7 +196,7 @@ export default function Index() {
           ))}
         </div>
       </div>
-    </main>
+    </Page>
   );
 }
 

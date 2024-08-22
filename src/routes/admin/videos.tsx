@@ -22,12 +22,11 @@ import PageTitle, { pageTitle } from "@/components/pageTitle";
 import { confirmWithDailog } from "@/components/confirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TextArea } from "@/components/ui/textarea";
-import { Video, createVideo } from "@/libs/datamodels/video";
+import { Video } from "@/libs/datamodels/video";
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
 import { toast } from "solid-sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { TransitionGroup } from "solid-transition-group";
-import { searchVideos } from "@/libs/services/algolia";
 import { createVideoList } from "@/libs/datamodels/videoList";
 
 const videos = createVideoList();
