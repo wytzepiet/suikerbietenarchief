@@ -1,4 +1,4 @@
-import { ComponentProps, mergeProps, onMount } from "solid-js";
+import { mergeProps, onMount } from "solid-js";
 import gsap from "gsap-trial/dist/gsap";
 import { cn } from "@/libs/cn";
 
@@ -26,6 +26,7 @@ export default function AnimatedText(props: Props) {
     const { SplitText } = await import("gsap-trial/SplitText");
     await import("gsap-trial/dist/ScrollTrigger");
 
+    gsap.registerPlugin(SplitText);
     const split = new SplitText(content);
 
     gsap.from(
