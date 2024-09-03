@@ -60,7 +60,7 @@ export default function VideoScreen() {
       <div class="video-info">
         <Card id="video" class="fade-in overflow-hidden">
           <Show when={video()?.data}>
-            <MuxPlayer video={video()!} />{" "}
+            <MuxPlayer autoplay video={video()!} />{" "}
           </Show>
           <Show when={!video()?.data}>
             <img src={video()?.thumbnailUrl()} alt="thumbnail" />

@@ -11,7 +11,6 @@ interface MuxPlayerProps {
 }
 
 export default function MuxPlayer(props: MuxPlayerProps) {
-  if (props.autoplay) props.muted = true;
   const aspectRatio = () =>
     props.video.data.aspect_ratio?.replace(":", " / ") ?? "16 / 9";
 

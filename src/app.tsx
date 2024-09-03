@@ -21,13 +21,13 @@ export default function App() {
           <ColorModeProvider>
             <div class="fixed z-50 w-full flex justify-center pt-2 pointer-events-none">
               <Card class="p-1 flex items-center pointer-events-auto">
-                <a href="/" class="hidden sm:block">
+                <A href="/" class="hidden sm:block">
                   <h1 class="px-4 text-lg">Nationaal Suikerbietenarchief</h1>
-                </a>
+                </A>
                 <NavItem href="/">Home</NavItem>
                 <NavItem href="/archief">Archief</NavItem>
                 <NavItem href="/kaart">Kaart</NavItem>
-                <NavItem href="/admin">Login</NavItem>
+                <NavItem href="/admin">Inloggen</NavItem>
               </Card>
             </div>
 

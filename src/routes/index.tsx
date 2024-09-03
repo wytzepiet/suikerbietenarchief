@@ -6,6 +6,7 @@ import timelineStyle from "@/libs/timeline.module.css";
 import "@mux/mux-player";
 import inView from "@/libs/utils/inView";
 import Page from "@/components/page";
+import { A } from "@solidjs/router";
 
 const timeline = [
   {
@@ -187,10 +188,10 @@ export default function Index() {
               <div style="height: 1em"></div>
               <div class={timelineStyle.content}>
                 <p>{event.description}</p>
-                <a href="/" class="text-white">
+                <A href="/" class="text-white">
                   Lees meer
                   <ChevronRight size="1em" class="inline" />
-                </a>
+                </A>
               </div>
             </div>
           ))}

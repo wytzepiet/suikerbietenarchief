@@ -2,6 +2,7 @@ import PageTitle from "./pageTitle";
 import { isServer } from "solid-js/web";
 import { onCleanup, onMount, Show } from "solid-js";
 import { useLocation } from "@solidjs/router";
+// import { ScrollSmoother } from "gsap-trial/dist/ScrollSmoother";
 
 const scrollPositions: { [path: string]: number } = {};
 let scrollSmooth: ScrollSmoother | null = null;
@@ -22,6 +23,7 @@ const Page = (props: {
 
   onMount(async () => {
     if (!scrollSmooth) {
+      console.log("loading scrollSmooth");
       const { ScrollSmoother } = await import("gsap-trial/ScrollSmoother");
       scrollSmooth = ScrollSmoother.create({
         smooth: 1, // how long (in seconds) it takes to "catch up" to the native scroll position
