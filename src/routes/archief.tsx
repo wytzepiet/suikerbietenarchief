@@ -46,10 +46,9 @@ export default function Archief(props: RouteSectionProps) {
       class="w-[1200px] max-w-full flex flex-col gap-4 pt-[50px] px-4"
       hideUntilMounted
     >
-      <div class="blur-overlay fixed inset-0 z-10 pointer-events-none bg-background opacity-0"></div>
       {props.children}
 
-      <div class="archief">
+      <div class="archief flex flex-col gap-4">
         <div>
           <h1 class="page-title font-medium text-6xl">
             <AnimatedText>Archief</AnimatedText>
@@ -68,7 +67,7 @@ export default function Archief(props: RouteSectionProps) {
                 return (
                   <A
                     href={`/archief/videos/${video.data.id}`}
-                    class="transition-all duration-300 [&.s-exit-to]:opacity-0"
+                    class="transition-all duration-300 [&.s-exit-to]:opacity-0 aspect-[3/2]"
                     onClick={() => setVideo(video)}
                     noScroll
                   >
@@ -85,7 +84,7 @@ export default function Archief(props: RouteSectionProps) {
                         />
                       </Show>
                       <img
-                        class="w-full object-cover scale-105 aspect-[3/2] group-hover:opacity-0 transition-opacity duration-300"
+                        class="w-full object-cover scale-105  group-hover:opacity-0 transition-opacity duration-300"
                         src={video.thumbnailUrl()}
                         alt=""
                       />
