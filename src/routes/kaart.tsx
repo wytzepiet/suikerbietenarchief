@@ -9,19 +9,23 @@ import { VideoPreview } from "@/components/videoPreview";
 import { createVideo, Video } from "@/libs/datamodels/video";
 import { supabase } from "@/libs/services/supabase/client";
 import { Tables } from "@/libs/services/supabase/types";
-
-import { RouteSectionProps } from "@solidjs/router";
 import {
   createEffect,
   createMemo,
   createResource,
   createSignal,
   For,
+  onCleanup,
   onMount,
 } from "solid-js";
 import { Spinner, SpinnerType } from "solid-spinner";
 
-export default function Kaart(props: RouteSectionProps) {
+export default function Kaart() {
+  onMount(() => {
+    document.body.style.overflow = "hidden";
+    onCleanup(() => (document.body.style.overflow = "auto"));
+  });
+
   const [locations] = createResource(async () => {
     const { data, error } = await supabase.from("locations").select();
     if (error) throw error;
@@ -63,7 +67,7 @@ export default function Kaart(props: RouteSectionProps) {
   const markers = createMemo(() => locations()?.map(marker) ?? []);
 
   const mapElement = (
-    <div class="!fixed inset-0 h-screen w-screen"></div>
+    <div class="!fixed inset-0 h-screen w-screen z-0"></div>
   ) as HTMLDivElement;
 
   onMount(async () => {
@@ -83,6 +87,7 @@ export default function Kaart(props: RouteSectionProps) {
       zoom: 8,
       backgroundColor: "rgba(0,0,0,0)",
       disableDefaultUI: true,
+      gestureHandling: "greedy",
     });
 
     createEffect(() => {
