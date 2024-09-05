@@ -55,6 +55,7 @@ export type Database = {
           generate_description: boolean | null
           id: number
           keywords: string[]
+          locations: number[] | null
           playback_id: string | null
           prompt_hint: string | null
           status: string | null
@@ -74,6 +75,7 @@ export type Database = {
           generate_description?: boolean | null
           id?: number
           keywords?: string[]
+          locations?: number[] | null
           playback_id?: string | null
           prompt_hint?: string | null
           status?: string | null
@@ -93,6 +95,7 @@ export type Database = {
           generate_description?: boolean | null
           id?: number
           keywords?: string[]
+          locations?: number[] | null
           playback_id?: string | null
           prompt_hint?: string | null
           status?: string | null

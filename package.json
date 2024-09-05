@@ -10,6 +10,7 @@
     "ngrok": "ngrok http --domain=shortly-fit-leopard.ngrok-free.app 3000"
   },
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.4.0",
     "@kobalte/core": "^0.13.4",
     "@mux/mux-node": "^8.8.0",
     "@mux/mux-player": "^2.9.1",

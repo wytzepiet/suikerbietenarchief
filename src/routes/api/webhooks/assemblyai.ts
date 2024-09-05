@@ -1,5 +1,3 @@
-"use server";
-
 import { supabase } from "@/libs/services/supabase/server";
 import { generateMetadata } from "@/libs/services/openai";
 import { json } from "@solidjs/router";
@@ -7,6 +5,7 @@ import { APIEvent } from "node_modules/@solidjs/start/dist/server";
 import { getTranscript } from "@/libs/services/assemblyai";
 
 export async function POST({ request }: APIEvent) {
+  "use server";
   try {
     const res = await request.json();
     const { searchParams } = new URL(request.url);
@@ -45,7 +44,14 @@ export async function POST({ request }: APIEvent) {
       transcript.text
     );
     if (metadata) {
-      await supabase().from("videos").update(metadata).eq("id", data.id);
+      metadata.locations.forEach((location) => {});
+
+      const { description, keywords } = metadata;
+
+      await supabase()
+        .from("videos")
+        .update({ description, keywords })
+        .eq("id", data.id);
     }
 
     return json({ message: "Webhook received successfully" }, { status: 200 });

@@ -1,5 +1,3 @@
-"use server";
-
 import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod.mjs";
 import { z } from "zod";
@@ -11,53 +9,37 @@ export async function generateMetadata(
   hint: string | null | undefined,
   transcript: string | null | undefined
 ) {
+  "use server";
   if (!title || !transcript) return undefined;
-  const instructionPrefix =
-    "Hier is een titel, een korte beschrijving en een automatisch gegenereerde transcriptie van een video. De video komt terecht in een beeldarchief over de suikerindustrie in Nederland. ";
-  async function gpt(
-    instruction: string,
-    settings?: {
-      responseformat?:
-        | OpenAI.ResponseFormatText
-        | OpenAI.ResponseFormatJSONObject
-        | OpenAI.ResponseFormatJSONSchema
-        | undefined;
-    }
-  ) {
-    const response = await openai().chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        { role: "system", content: instructionPrefix + instruction },
-        {
-          role: "user",
-          content:
-            "Titel: " +
-            title +
-            "\n\nBeschrijving: " +
-            hint +
-            "\n\nTranscriptie: " +
-            transcript,
-        },
-      ],
-      temperature: 0.5,
-      max_tokens: 500,
-      response_format: settings?.responseformat,
-    });
-    return response.choices?.[0]?.message?.content ?? undefined;
-  }
 
-  const keywordsObject = z.string().array().min(10).max(20);
+  const instruction = `
+  Hier is een titel, een korte beschrijving en een automatisch gegenereerde transcriptie van een video. 
+  De video komt terecht in een beeldarchief over de suikerindustrie in Nederland. 
 
-  const [keywords, description] = await Promise.all([
-    gpt(
-      "Identificeer de belangrijkste en onderscheidende zoektermen die specifiek zijn voor de inhoud van deze video, maar vermijd generieke termen zoals 'suiker' en 'biet'.",
-      { responseformat: zodResponseFormat(keywordsObject, "keywords") }
-    ),
-    gpt(
-      "Schrijf een kort stukje tekst dat geschikt is als beschrijving onder de video. Gebruik maximaal 500 tekens."
-    ),
-  ]);
+  Ik wil graag drie dingen:
+  1. keywords: Identificeer de belangrijkste en onderscheidende zoektermen die specifiek zijn voor de inhoud van deze video, maar vermijd generieke termen zoals 'suiker' en 'biet'.
+  2. description: Schrijf een kort stukje tekst dat geschikt is als beschrijving onder de video. Gebruik maximaal 500 tekens.
+  3. locations: Als er locaties genoemd worden die relevant zijn voor deze video, geef mij dan die locaties.
+  `;
 
-  if (!keywords || !description) return undefined;
-  return { keywords: keywords.split(", "), description };
+  const responseFormat = z.object({
+    keywords: z.string().array().min(10).max(20),
+    description: z.string(),
+    locations: z.string().array(),
+  });
+
+  const res = await openai().beta.chat.completions.parse({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: instruction },
+      {
+        role: "user",
+        content: `Titel: ${title}\n\nBeschrijving: ${hint}\n\nTranscriptie: ${transcript}`,
+      },
+    ],
+    response_format: zodResponseFormat(responseFormat, "video_metadata"),
+  });
+
+  console.log("openai data", res.choices[0].message.parsed);
+  return res.choices[0].message.parsed;
 }
