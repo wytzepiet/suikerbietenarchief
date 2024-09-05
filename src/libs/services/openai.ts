@@ -17,19 +17,19 @@ export async function generateMetadata(
   De video komt terecht in een beeldarchief over de suikerindustrie in Nederland. 
 
   Ik wil graag drie dingen:
-  1. keywords: Identificeer de belangrijkste en onderscheidende zoektermen die specifiek zijn voor de inhoud van deze video, maar vermijd generieke termen zoals 'suiker' en 'biet'.
+  1. keywords: Identificeer de belangrijkste en onderscheidende zoektermen die specifiek zijn voor de inhoud van deze video, maar vermijd generieke termen zoals 'suiker' en 'biet'. Geef maximaal 20 termen.
   2. description: Schrijf een kort stukje tekst dat geschikt is als beschrijving onder de video. Gebruik maximaal 500 tekens.
-  3. locations: Als er locaties genoemd worden die relevant zijn voor deze video, geef mij dan die locaties.
+  3. locations: Als er plaatsnamen genoemd worden die relevant zijn voor deze video, geef mij dan die locaties. Geen gebieden, provincies of landen, alleen specifieke plaatsen.
   `;
 
   const responseFormat = z.object({
-    keywords: z.string().array().min(10).max(20),
+    keywords: z.string().array(),
     description: z.string(),
     locations: z.string().array(),
   });
 
   const res = await openai().beta.chat.completions.parse({
-    model: "gpt-4o",
+    model: "gpt-4o-2024-08-06",
     messages: [
       { role: "system", content: instruction },
       {
@@ -42,4 +42,27 @@ export async function generateMetadata(
 
   console.log("openai data", res.choices[0].message.parsed);
   return res.choices[0].message.parsed;
+}
+
+export async function generateLocationDescription(name: string) {
+  "use server";
+  const instruction = `
+    Geef mij een korte beschrijving van deze locatie met betrekking tot de suikerindustrie in Nederland.
+  `;
+
+  const responseFormat = z.object({
+    description: z.string(),
+  });
+
+  const res = await openai().beta.chat.completions.parse({
+    model: "gpt-4o-2024-08-06",
+    messages: [
+      { role: "system", content: instruction },
+      { role: "user", content: name },
+    ],
+    response_format: zodResponseFormat(responseFormat, "location_description"),
+  });
+
+  console.log("openai data", res.choices[0].message.parsed);
+  return { ...res.choices[0].message.parsed };
 }

@@ -1,5 +1,3 @@
-"use server";
-
 import { muxClient } from "@/libs/services/mux";
 import { supabase } from "@/libs/services/supabase/server";
 import { transcribe } from "@/libs/services/assemblyai";
@@ -11,7 +9,6 @@ function oopsie(message: string, status: number) {
 }
 export async function POST({ request }: APIEvent) {
   try {
-    const params = new URL(request.url).searchParams;
     // Parse the incoming request body
     // // const payload = await request.json();
     // const body = JSON.stringify(payload, null, 2);
@@ -21,7 +18,7 @@ export async function POST({ request }: APIEvent) {
       request.headers
     );
 
-    console.log("hook: ", hook.type);
+    console.log("hook:", hook.type);
 
     // console.log('Unwrapped Mux event:', JSON.stringify(event, null, 2));
 
@@ -53,7 +50,8 @@ export async function POST({ request }: APIEvent) {
       }
 
       const upload = uploads.data[0];
-      const { data, error } = await supabase()
+
+      const { error } = await supabase()
         .from("videos")
         .insert({
           asset_id: hook.data.id,
@@ -77,7 +75,7 @@ export async function POST({ request }: APIEvent) {
       return new Response("OK", { status: 200 });
     }
     if (hook.type === "video.asset.ready") {
-      const { data, error } = await supabase()
+      const { error } = await supabase()
         .from("videos")
         .update({
           status: hook.data.status,

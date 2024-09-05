@@ -3,9 +3,10 @@ import { generateMetadata } from "@/libs/services/openai";
 import { json } from "@solidjs/router";
 import { APIEvent } from "node_modules/@solidjs/start/dist/server";
 import { getTranscript } from "@/libs/services/assemblyai";
+import { updateMetadata } from "@/libs/services/updatemetadata";
+import { F } from "node_modules/@kobalte/core/dist/form-control-label-fea2aaa3";
 
 export async function POST({ request }: APIEvent) {
-  "use server";
   try {
     const res = await request.json();
     const { searchParams } = new URL(request.url);
@@ -27,31 +28,29 @@ export async function POST({ request }: APIEvent) {
       return json({ error: error.message }, { status: 500 });
     }
 
-    if (!data.generate_description) return;
+    const { id, title, prompt_hint, generate_description } = data;
 
-    const transcript = await getTranscript(transcriptId);
+    if (!generate_description) return;
 
-    console.log("Transcript text:", transcript.text);
+    const { text: transcript } = await getTranscript(transcriptId);
 
-    if (!transcript.text) {
-      console.error("Error fetching transcript text for video:", data.title);
+    console.log("Transcript text:", transcript);
+
+    if (!transcript) {
+      console.error("Error fetching transcript text for video:", title);
       return json({ error: "Error fetching transcript text" }, { status: 500 });
     }
 
-    const metadata = await generateMetadata(
-      data.title,
-      data.prompt_hint,
-      transcript.text
-    );
-    if (metadata) {
-      metadata.locations.forEach((location) => {});
+    if (!id || !title || !prompt_hint) {
+      console.error("Error fetching video data for video:", title);
+      return json({ error: "Error fetching video data" }, { status: 500 });
+    }
 
-      const { description, keywords } = metadata;
-
-      await supabase()
-        .from("videos")
-        .update({ description, keywords })
-        .eq("id", data.id);
+    try {
+      await updateMetadata(id, { title, prompt_hint, transcript });
+    } catch (error) {
+      console.error("Error updating metadata for video:", title);
+      return json({ error: "Error updating metadata" }, { status: 500 });
     }
 
     return json({ message: "Webhook received successfully" }, { status: 200 });

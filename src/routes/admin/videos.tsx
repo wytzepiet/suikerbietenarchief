@@ -28,6 +28,8 @@ import { toast } from "solid-sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { TransitionGroup } from "solid-transition-group";
 import { createVideoList } from "@/libs/datamodels/videoList";
+import { getTranscript } from "@/libs/services/assemblyai";
+import { updateMetadata } from "@/libs/services/updatemetadata";
 
 const videos = createVideoList();
 
@@ -120,6 +122,19 @@ function VideoListItem({ video }: { video: Video }) {
     return hms.map((t) => Math.floor(t).toString().padStart(2, "0")).join(":");
   }
 
+  const [updatingMetadata, setUpdatingMetadata] = createSignal(false);
+  async function updateVideoMetadata() {
+    if (updatingMetadata()) return;
+    setUpdatingMetadata(true);
+    const { id, title, prompt_hint, transcript_id } = video.data;
+    if (!title || !prompt_hint || !transcript_id) return;
+    const { text: transcript } = await getTranscript(transcript_id);
+    if (!transcript) return;
+    const data = await updateMetadata(id, { title, prompt_hint, transcript });
+    video.update(data);
+    setUpdatingMetadata(false);
+  }
+
   return (
     <Sheet open={open()} onOpenChange={toggleSheet}>
       <SheetTrigger class="flex gap-4 items-center p-1 hover:bg-muted rounded-md">
@@ -164,9 +179,6 @@ function VideoListItem({ video }: { video: Video }) {
         >
           <TextFieldLabel class="flex justify-between items-end">
             Beschrijving
-            <Button size="sm" variant="ghost" class="self-start">
-              <Sparkles size="1.25em" class="mr-1" /> genereren met AI
-            </Button>
           </TextFieldLabel>
           <TextArea autoResize />
         </TextFieldRoot>
@@ -180,6 +192,15 @@ function VideoListItem({ video }: { video: Video }) {
           <Button class="flex items-center gap-1" onClick={saveVideo}>
             <Save size="1.25em" />
             Opslaan
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            class="self-start"
+            onClick={updateVideoMetadata}
+          >
+            <Sparkles size="1.25em" class="mr-1" />
+            {updatingMetadata() ? "Bezig..." : "Genereren met AI"}
           </Button>
           <Separator orientation="vertical" />
           <Button

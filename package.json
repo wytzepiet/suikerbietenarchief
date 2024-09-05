@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^3.4.0",
+    "@googlemaps/js-api-loader": "^1.16.8",
     "@kobalte/core": "^0.13.4",
     "@mux/mux-node": "^8.8.0",
     "@mux/mux-player": "^2.9.1",
@@ -20,6 +21,7 @@
     "@solidjs/router": "^0.13.6",
     "@solidjs/start": "^1.0.6",
     "@supabase/supabase-js": "^2.45.1",
+    "@types/google.maps": "^3.57.0",
     "algoliasearch": "^4.24.0",
     "assemblyai": "^4.6.1",
     "class-variance-authority": "^0.7.0",
