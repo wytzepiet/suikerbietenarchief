@@ -85,7 +85,7 @@ export default function Kaart() {
       mapId: "5e7fdffd91c64a70",
       center: { lat: 52.168686, lng: 5.535475 },
       zoom: 8,
-      backgroundColor: "rgba(0,0,0,0)",
+      backgroundColor: "transparent",
       disableDefaultUI: true,
       gestureHandling: "greedy",
     });
