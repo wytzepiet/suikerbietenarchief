@@ -32,6 +32,7 @@
     "shadcn-solid": "^0.7.5",
     "solid-js": "^1.8.21",
     "solid-sonner": "^0.2.8",
+    "solid-spinner": "^0.2.0",
     "solid-transition-group": "^0.2.3",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",

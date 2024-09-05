@@ -207,16 +207,34 @@ function ImageCloud(props: {
 }) {
   if (!props.images)
     props.images = [
-      { title: "Image 1" },
-      { title: "Image 2" },
-      { title: "Image 3" },
-      { title: "Image 4" },
-      { title: "Image 5" },
-      { title: "Image 6" },
-      { title: "Image 7" },
-      { title: "Image 8" },
-      { title: "Image 9" },
-      { title: "Image 10" },
+      {
+        title: "Image 1",
+        url: "https://cdn.sanity.io/images/te741qs0/production/1d7860b4d96c2c572bff229f630c464e1af77b46-4330x2711.jpg",
+      },
+      {
+        title: "Image 2",
+        url: "https://cdn.sanity.io/images/te741qs0/production/0856c5df18fdaefce4bd52180300de7de884f8fe-3063x4769.jpg",
+      },
+      {
+        title: "Image 3",
+        url: "https://cdn.sanity.io/images/te741qs0/production/a43eb20d498aa240b9cb8ed923f6046c0b6d94f2-5634x5746.jpg",
+      },
+      {
+        title: "Image 4",
+        url: "https://cdn.sanity.io/images/te741qs0/production/31481400f8db79116c151f49ae8a420173599af8-5586x5698.jpg",
+      },
+      {
+        title: "Image 5",
+        url: "https://cdn.sanity.io/images/te741qs0/production/46af6da4e3b4c8fd516911b6c278fef0baecd0ba-5594x5740.jpg",
+      },
+      {
+        title: "Image 6",
+        url: "https://cdn.sanity.io/images/te741qs0/production/7a0daa59f10d306979882c0a50be3ac702fdf5ce-5602x5802.jpg",
+      },
+      {
+        title: "Image 7",
+        url: "https://cdn.sanity.io/images/te741qs0/production/82cdb2f19b472d42313814d392ad58ac1f024978-5602x5673.jpg",
+      },
     ];
 
   let cloud: HTMLDivElement | undefined;
@@ -258,10 +276,11 @@ function ImageCloud(props: {
   function setPosition(el: HTMLElement, i: number) {
     if (!cloud) return;
     const [x, y, z] = fibonacciSphere(i);
-    const speed = Math.round(z * 100) / 100;
+    let speed = Math.round(z * 100) / 100;
+    speed = 0.4 + speed * 0.6;
 
     el.style.zIndex = `${Math.round(speed * 20)}`;
-    el.style.scale = `${speed + 0.2}`;
+    el.style.scale = `${speed}`;
     el.querySelector("img")!.style.opacity = `${speed * 0.8 + 0.2}`;
     el.setAttribute("data-speed", speed.toString());
     const move = () => moveImage(el, x, y);
@@ -271,10 +290,14 @@ function ImageCloud(props: {
     onCleanup(() => window.removeEventListener("resize", move));
   }
 
-  const elements = props.images!.map((img, i) => (
+  const elements = [...props.images, ...props.images].map((img, i) => (
     <div class="image absolute rounded-lg bg-background overflow-hidden w-[max(20vw,100px)]">
       <img
-        src="https://cdn.sanity.io/images/te741qs0/production/31481400f8db79116c151f49ae8a420173599af8-5586x5698.jpg?w=311"
+        src={
+          (img.url ??
+            "https://cdn.sanity.io/images/te741qs0/production/31481400f8db79116c151f49ae8a420173599af8-5586x5698.jpg") +
+          "?w=500"
+        }
         alt={img.title}
         class="w-full"
       />

@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/sheet";
 import { VideoPreview } from "@/components/videoPreview";
 import { createVideo, Video } from "@/libs/datamodels/video";
-import { generateLocationDescription } from "@/libs/services/openai";
 import { supabase } from "@/libs/services/supabase/client";
 import { Tables } from "@/libs/services/supabase/types";
 
@@ -20,24 +19,12 @@ import {
   For,
   onMount,
 } from "solid-js";
+import { Spinner, SpinnerType } from "solid-spinner";
 
 export default function Kaart(props: RouteSectionProps) {
   const [locations] = createResource(async () => {
     const { data, error } = await supabase.from("locations").select();
     if (error) throw error;
-
-    data.forEach(async (location) => {
-      if (!location.description) {
-        const { description } = await generateLocationDescription(
-          location.name
-        );
-        await supabase
-          .from("locations")
-          .update({ description })
-          .eq("id", location.id);
-      }
-    });
-
     return data;
   });
 
@@ -94,14 +81,8 @@ export default function Kaart(props: RouteSectionProps) {
       mapId: "5e7fdffd91c64a70",
       center: { lat: 52.168686, lng: 5.535475 },
       zoom: 8,
-      backgroundColor: "hsl(var(--background))",
-      clickableIcons: false,
-      zoomControl: false,
-      scaleControl: false,
-      rotateControl: false,
-      mapTypeControl: false,
-      fullscreenControl: false,
-      streetViewControl: false,
+      backgroundColor: "rgba(0,0,0,0)",
+      disableDefaultUI: true,
     });
 
     createEffect(() => {
@@ -125,7 +106,9 @@ export default function Kaart(props: RouteSectionProps) {
 
   return (
     <main>
-      <h1>Kaart</h1>
+      <div class="h-screen w-full flex items-center justify-center">
+        <Spinner type={SpinnerType.oval} />
+      </div>
       <div class="opacity-0"> {markers()}</div>
       {mapElement}
       <Sheet open={open()} onOpenChange={setOpen}>
@@ -133,7 +116,9 @@ export default function Kaart(props: RouteSectionProps) {
           <SheetTitle class="text-5xl">{currentLocation()?.name}</SheetTitle>
           <SheetDescription>{currentLocation()?.description}</SheetDescription>
 
-          <h3 class="text-2xl pt-4">Video's met {currentLocation()?.name}</h3>
+          <h3 class="text-2xl pt-4">
+            Video's waar {currentLocation()?.name} in voorkomt
+          </h3>
           <For each={videos()}>
             {(video) => {
               return <VideoPreview video={video} />;
