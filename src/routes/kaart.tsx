@@ -117,7 +117,7 @@ export default function Kaart() {
       <div class="opacity-0"> {markers()}</div>
       {mapElement}
       <Sheet open={open()} onOpenChange={setOpen}>
-        <SheetContent class="flex flex-col gap-4 overflow-y-scroll">
+        <SheetContent class="flex flex-col gap-4 overflow-y-scroll overflow-x-hidden">
           <SheetTitle class="text-5xl">{currentLocation()?.name}</SheetTitle>
           <SheetDescription>{currentLocation()?.description}</SheetDescription>
 
