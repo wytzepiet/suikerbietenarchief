@@ -3,7 +3,7 @@ import { Video } from "@/libs/datamodels/video";
 import "@mux/mux-player";
 
 interface MuxPlayerProps {
-  video: Video;
+  video: Video | undefined;
   class?: string;
   style?: string;
   autoplay?: boolean;
@@ -12,7 +12,7 @@ interface MuxPlayerProps {
 
 export default function MuxPlayer(props: MuxPlayerProps) {
   const aspectRatio = () =>
-    props.video.data.aspect_ratio?.replace(":", " / ") ?? "16 / 9";
+    props.video?.data.aspect_ratio?.replace(":", " / ") ?? "16 / 9";
 
   return (
     <div
@@ -22,7 +22,7 @@ export default function MuxPlayer(props: MuxPlayerProps) {
       {/* @ts-ignore */}
       <mux-player
         class="absolute inset-0 object-cover"
-        playback-id={props.video.data.playback_id}
+        playback-id={props.video?.data.playback_id}
         autoplay={props.autoplay}
         loop={props.autoplay}
         muted={props.muted}

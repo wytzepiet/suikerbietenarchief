@@ -1,10 +1,9 @@
 import PageTitle from "./pageTitle";
 import { isServer } from "solid-js/web";
-import { onCleanup, onMount, Show } from "solid-js";
+import { onMount, Show } from "solid-js";
 import { useLocation } from "@solidjs/router";
-// import { ScrollSmoother } from "gsap-trial/dist/ScrollSmoother";
+// import { ScrollSmoother } from "gsap/dist/ScrollSmoother";
 
-const scrollPositions: { [path: string]: number } = {};
 let scrollSmoother: ScrollSmoother | null = null;
 
 const Page = (props: {
@@ -22,23 +21,16 @@ const Page = (props: {
   }
 
   onMount(async () => {
-    console.log("mounted");
     if (!scrollSmoother) {
       console.log("loading scrollSmooth");
-      const { ScrollSmoother } = await import("gsap-trial/ScrollSmoother");
+      const { ScrollSmoother } = await import("gsap/ScrollSmoother");
       scrollSmoother = ScrollSmoother.create({
         smooth: 1, // how long (in seconds) it takes to "catch up" to the native scroll position
         effects: true, // looks for data-speed and data-lag attributes on elements
         smoothTouch: 0.1, // much shorter smoothing time on touch devices (default is NO smoothing on touch devices)
       });
     }
-    // if (props.saveScrollY && scrollPositions[pathname]) {
-    //   scrollSmoother.scrollTo(scrollPositions[pathname], false);
-    // }
   });
-
-  // const savePosition = () => (scrollPositions[pathname] = window.scrollY);
-  // if (!isServer && props.saveScrollY) onCleanup(savePosition);
 
   return (
     <main class={props.class}>

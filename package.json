@@ -23,7 +23,7 @@
     "assemblyai": "^4.6.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "gsap-trial": "^3.12.5",
+    "gsap": "npm:@gsap/shockingly@^3.12.5",
     "lucide-solid": "^0.394.0",
     "openai": "^4.56.0",
     "shadcn-solid": "^0.7.5",
@@ -32,7 +32,8 @@
     "solid-transition-group": "^0.2.3",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
-    "vinxi": "^0.3.14"
+    "vinxi": "^0.3.14",
+    "zod": "^3.23.8"
   },
   "engines": {
     "node": ">=18"

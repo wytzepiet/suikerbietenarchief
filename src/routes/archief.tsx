@@ -3,11 +3,10 @@ import { TextField, TextFieldRoot } from "@/components/ui/textfield";
 import { createVideoList } from "@/libs/datamodels/videoList";
 import { A, RouteSectionProps } from "@solidjs/router";
 import { For, Show, createSignal, onMount } from "solid-js";
-import gsap from "gsap-trial/dist/gsap";
+import gsap from "gsap/dist/gsap";
 import { TransitionGroup } from "solid-transition-group";
 import AnimatedText from "@/components/animatedText";
 import Page from "@/components/page";
-import { setVideo } from "./archief/videos/[id]";
 
 const videos = createVideoList();
 
@@ -68,7 +67,6 @@ export default function Archief(props: RouteSectionProps) {
                   <A
                     href={`/archief/videos/${video.data.id}`}
                     class="transition-all duration-300 [&.s-exit-to]:opacity-0 aspect-[3/2]"
-                    onClick={() => setVideo(video)}
                     noScroll
                   >
                     <Card

@@ -57,8 +57,8 @@ export default function Index() {
   let [blur, setBlur] = createSignal(0);
 
   onMount(async () => {
-    const { gsap } = await import("gsap-trial");
-    const { ScrollTrigger } = await import("gsap-trial/ScrollTrigger");
+    const { gsap } = await import("gsap");
+    const { ScrollTrigger } = await import("gsap/ScrollTrigger");
 
     ScrollTrigger.create({
       trigger: ".blurrer",

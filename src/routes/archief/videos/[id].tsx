@@ -1,105 +1,111 @@
 import MuxPlayer from "@/components/muxPlayer";
 import { Card, CardContent } from "@/components/ui/card";
-import { Video, createVideo } from "@/libs/datamodels/video";
+import { createVideo } from "@/libs/datamodels/video";
 import { createVideoList } from "@/libs/datamodels/videoList";
 import { supabase } from "@/libs/services/supabase/client";
 import { A, useNavigate, useParams } from "@solidjs/router";
-import { Show, createEffect, createSignal, onCleanup } from "solid-js";
-import gsap from "gsap-trial/dist/gsap";
+import {
+  Show,
+  createEffect,
+  createMemo,
+  createResource,
+  onCleanup,
+  onMount,
+} from "solid-js";
+import gsap from "gsap/dist/gsap";
 import { isServer } from "solid-js/web";
-import { Flip } from "gsap-trial/dist/Flip";
-
-export const [video, setVideo] = createSignal<Video | null>(null);
 
 export default function VideoScreen() {
   const params = useParams();
   const navigate = useNavigate();
 
+  const [data] = createResource(async () => {
+    const res = await supabase.from("videos").select().eq("id", params.id);
+    if (res.error) throw res.error;
+    return res.data[0];
+  });
+
+  const video = createMemo(() => (data() ? createVideo(data()!) : undefined));
+
   const recommendations = createVideoList();
   recommendations.fetchVideos();
-
-  if (!video()?.data) {
-    const query = supabase.from("videos").select().eq("id", params.id);
-    query.then(({ data, error }) => {
-      if (error) throw error;
-      setVideo(createVideo(data[0]));
-    });
-  }
-  onCleanup(() => setVideo(null));
 
   let onGoBack = (e?: Event) => {};
   const goBack = (e?: Event) => onGoBack(e);
 
-  createEffect(() => {
-    const query = `.video-${video()?.data.id}`;
-    const flipElements = document.querySelectorAll<HTMLElement>(query);
-    if (!flipElements[1]) return;
+  onMount(() => {
+    createEffect(async () => {
+      const query = `.video-${video()?.data.id}`;
+      const flipElements = document.querySelectorAll<HTMLElement>(query);
+      if (!flipElements[1]) return;
 
-    document.body.style.overflowY = "hidden";
+      document.body.style.overflowY = "hidden";
 
-    gsap.registerPlugin(Flip);
-    const flipState = Flip.getState(query);
+      const { Flip } = await import("gsap/Flip");
 
-    const flip = (forward = true, onComplete?: Function) => {
-      if (Flip.isFlipping(flipElements)) Flip.killFlipsOf(flipElements);
-      flipElements[forward ? 1 : 0].style.display = "none";
-      flipElements[forward ? 0 : 1].style.display = "block";
+      document.getElementById("main")!.style.opacity = "1";
 
-      Flip.from(flipState, {
-        duration: 0.7,
-        fade: true,
-        absolute: true,
-        simple: true,
-        ease: "expo.out",
-        zIndex: 40,
-        onComplete: () => {
-          if (onComplete) onComplete();
-          flipElements.forEach((el) => (el.style.transform = ""));
-        },
-      });
-    };
-    flip();
+      gsap.registerPlugin(Flip);
+      const flipState = Flip.getState(query);
 
-    const dimBody = gsap.to(".archief", {
-      duration: 0.5,
-      ease: "power1.out",
-      filter: "blur(10px)",
-      opacity: 0.25,
-    });
+      const flip = (forward = true, onComplete?: Function) => {
+        if (Flip.isFlipping(flipElements)) Flip.killFlipsOf(flipElements);
+        flipElements[forward ? 1 : 0].style.display = "none";
+        flipElements[forward ? 0 : 1].style.display = "block";
 
-    onGoBack = (e?: Event) => {
-      e?.preventDefault();
-      document.body.style.overflowY = "scroll";
+        Flip.from(flipState, {
+          duration: 0.7,
+          fade: true,
+          absolute: true,
+          simple: true,
+          ease: "expo.out",
+          zIndex: 40,
+          onComplete: () => {
+            if (onComplete) onComplete();
+            flipElements.forEach((el) => (el.style.transform = ""));
+          },
+        });
+      };
+      flip();
 
-      flip(false, () => navigate("/archief", { scroll: false }));
-
-      dimBody.kill();
-      gsap.to(".archief", {
-        duration: 0.2,
+      const dimBody = gsap.to(".archief", {
+        duration: 0.5,
         ease: "power1.out",
-        filter: "blur(0px)",
-        opacity: 1,
+        filter: "blur(10px)",
+        opacity: 0.25,
       });
 
-      onGoBack = () => {};
-    };
+      onGoBack = (e?: Event) => {
+        e?.preventDefault();
+        document.body.style.overflowY = "scroll";
+
+        flip(false, () => navigate("/archief", { scroll: false }));
+
+        dimBody.kill();
+        gsap.to(".archief", {
+          duration: 0.2,
+          ease: "power1.out",
+          filter: "blur(0px)",
+          opacity: 1,
+        });
+
+        onGoBack = () => {};
+      };
+    });
   });
 
-  onCleanup(goBack);
+  if (!isServer) onCleanup(goBack);
 
   return (
     <main
       id="main"
-      class="fixed w-full h-screen inset-0 pt-[80px] pb-4 z-20 flex justify-center"
-      style={{
-        opacity: video()?.data ? 1 : 0,
-        top: isServer ? "" : window.scrollY + "px",
-      }}
+      class="fixed w-full h-screen inset-0 pt-[80px] px-4 pb-4 z-20 flex justify-center opacity-0"
+      style={{ top: isServer ? "" : window.scrollY + "px" }}
     >
       <A
         href="/archief"
         class="overlay absolute inset-0"
-        onClick={goBack}
+        // onClick={goBack}
         noScroll
       />
       <Card
@@ -109,12 +115,7 @@ export default function VideoScreen() {
         data-flip-id={video()?.data.id}
       >
         <div id="video" class="fade-in overflow-hidden border-b">
-          <Show when={video()?.data}>
-            <MuxPlayer autoplay video={video()!} />{" "}
-          </Show>
-          <Show when={!video()?.data}>
-            <img src={video()?.thumbnailUrl()} alt="thumbnail" />
-          </Show>
+          <MuxPlayer autoplay video={video()!} />
         </div>
 
         <CardContent>
