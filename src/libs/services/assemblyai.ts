@@ -8,7 +8,7 @@ export function transcribe(playbackId: string) {
   return client.transcripts.submit({
     audio_url: `https://stream.mux.com/${playbackId}/audio.m4a`,
     language_code: "nl",
-    webhook_url: `https://shortly-fit-leopard.ngrok-free.app/api/webhooks/assemblyai?playback_id=${playbackId}`,
+    webhook_url: `${process.env.APP_URL}/api/webhooks/assemblyai?playback_id=${playbackId}`,
   });
 }
 
