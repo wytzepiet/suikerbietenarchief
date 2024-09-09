@@ -5,10 +5,18 @@ import { PostgrestResponse } from "@supabase/supabase-js";
 import { saveAlgoliaVideo } from "../services/algolia";
 import { deleteTranscript } from "../services/assemblyai";
 import { deleteMuxVideo as deleteMuxVideo, getMuxInfo } from "../services/mux";
-import { toast } from "solid-sonner";
+import { toaster } from "@kobalte/core";
+import {
+  Toast,
+  ToastContent,
+  ToastProgress,
+  ToastTitle,
+} from "@/components/ui/toast";
+
 import { Asset } from "@mux/mux-node/resources/video/assets.mjs";
-import { createSignal, on } from "solid-js";
+import { createSignal } from "solid-js";
 import { cache } from "@solidjs/router";
+import { Check, Loader } from "lucide-solid";
 
 type Data = Tables<"videos">;
 const ref = () => supabase.from("videos");
@@ -30,17 +38,39 @@ export function createVideo(input: Data) {
   const refetch = () => ref().select().eq("id", data.id).then(handleResponse);
 
   const saveUpdates = async () => {
-    toast.loading("Opslaan...", { id: "saveVideo" });
+    const [saved, setSaved] = createSignal(false);
+    toaster.show((props) => (
+      <Toast toastId={props.toastId}>
+        <ToastContent>
+          <div class="flex items-center gap-2 text-sm">
+            {saved() ? <Check /> : <Loader class="animate-spin" />}
+            <ToastTitle>
+              {saved() ? "Video opgeslagen." : "Opslaan..."}
+            </ToastTitle>
+          </div>
+        </ToastContent>
+        <ToastProgress />
+      </Toast>
+    ));
+
     const res = await ref().upsert(updates).select().then(handleResponse);
     if (res) saveAlgoliaVideo(res);
-    toast.success("Video opgeslagen.", { id: "saveVideo" });
+
+    setSaved(true);
   };
 
   async function deleteEverywhere() {
     await ref().delete().eq("id", data.id);
     if (data.asset_id) deleteMuxVideo(data.asset_id);
     if (data.transcript_id) deleteTranscript(data.transcript_id);
-    toast("Video verwijderd.", { closeButton: true });
+    toaster.show((props) => (
+      <Toast toastId={props.toastId}>
+        <ToastContent>
+          <ToastTitle>Video is verwijderd.</ToastTitle>
+        </ToastContent>
+        <ToastProgress />
+      </Toast>
+    ));
   }
 
   function thumbnailUrl(

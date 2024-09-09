@@ -12,7 +12,7 @@
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^3.4.0",
     "@googlemaps/js-api-loader": "^1.16.8",
-    "@kobalte/core": "^0.13.4",
+    "@kobalte/core": "^0.13.6",
     "@mux/mux-node": "^8.8.0",
     "@mux/mux-player": "^2.9.1",
     "@mux/upchunk": "^3.4.0",
@@ -31,7 +31,6 @@
     "openai": "^4.56.0",
     "shadcn-solid": "^0.7.5",
     "solid-js": "^1.8.21",
-    "solid-sonner": "^0.2.8",
     "solid-spinner": "^0.2.0",
     "solid-transition-group": "^0.2.3",
     "tailwind-merge": "^2.5.2",

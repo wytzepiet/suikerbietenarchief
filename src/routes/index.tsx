@@ -4,9 +4,10 @@ import { ChevronRight, Search } from "lucide-solid";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import timelineStyle from "@/libs/timeline.module.css";
 import "@mux/mux-player";
-import inView from "@/libs/utils/inView";
 import Page from "@/components/page";
+import { Card } from "@/components/ui/card";
 import { A } from "@solidjs/router";
+import inView from "@/libs/utils/inView";
 
 const timeline = [
   {
@@ -160,7 +161,7 @@ export default function Index() {
       <div class="h-[70vh]"></div>
 
       <ImageCloud>
-        <h1 class="text-8xl font-medium max-w-xl" use:inView>
+        <h1 class="text-8xl font-medium max-w-xl">
           <AnimatedText>Ontdek het verhaal van de suikerbiet</AnimatedText>
         </h1>
       </ImageCloud>
@@ -188,14 +189,47 @@ export default function Index() {
               <div style="height: 1em"></div>
               <div class={timelineStyle.content}>
                 <p>{event.description}</p>
-                <A href="/" class="text-white">
-                  Lees meer
-                  <ChevronRight size="1em" class="inline" />
-                </A>
               </div>
             </div>
           ))}
         </div>
+      </div>
+      <div class="h-40"></div>
+      <div class="relative p-4 flex flex-wrap gap-4">
+        <A href="/kaart">
+          <Card class="relative overflow-hidden max-w-lg group">
+            <div class="group-hover:scale-105 transition duration-300">
+              <img src="/map.png" class="opacity-30"></img>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <div class="p-4 max-w-md">
+                  <h2 class="text-4xl">Bekijk de kaart</h2>
+                  <p class="text-muted-foreground">
+                    Ontdek de belangrijkste plaatsen in de Nederlandse
+                    suikerindustrie
+                  </p>
+                  <div class="flex items-center">
+                    <p>Ga naar de kaart</p>
+                    <ChevronRight size="1.2em" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </A>
+        <Card class="relative overflow-hidden max-w-lg group">
+          <div class="group-hover:scale-105 transition duration-300">
+            <img src="/map.png" class="opacity-30"></img>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <div class="p-4 max-w-md">
+                <h2 class="text-4xl">Bekijk de kaart</h2>
+                <p class="text-muted-foreground">
+                  Ontdek de belangrijkste plaatsen in de Nederlandse
+                  suikerindustrie
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
     </Page>
   );

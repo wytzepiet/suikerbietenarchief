@@ -3,12 +3,12 @@ import { A, Router, useLocation } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
 import { ConfirmDialog } from "./components/confirmDialog";
-import { Toaster } from "./components/ui/sonner";
 import { ColorModeProvider, ColorModeScript } from "@kobalte/core";
 import "./app.css";
 import { Card } from "./components/ui/card";
 import { buttonVariants } from "./components/ui/button";
 import { cn } from "./libs/cn";
+import { ToastList, ToastRegion } from "./components/ui/toast";
 
 export default function App() {
   return (
@@ -37,7 +37,9 @@ export default function App() {
               </div>
             </div>
 
-            <Toaster />
+            <ToastRegion>
+              <ToastList />
+            </ToastRegion>
             <ConfirmDialog />
           </ColorModeProvider>
         </MetaProvider>

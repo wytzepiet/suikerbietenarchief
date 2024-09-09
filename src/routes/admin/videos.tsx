@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { A } from "@solidjs/router";
 import { Plus, Save, Sparkles, Trash2, Upload, VideoIcon } from "lucide-solid";
-import { For, Show, createSignal } from "solid-js";
+import { For, Show, createSignal, untrack } from "solid-js";
 import {
   Sheet,
   SheetContent,
@@ -24,12 +24,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TextArea } from "@/components/ui/textarea";
 import { Video } from "@/libs/datamodels/video";
 import { Image, ImageFallback, ImageRoot } from "@/components/ui/image";
-import { toast } from "solid-sonner";
-import { Toaster } from "@/components/ui/sonner";
 import { TransitionGroup } from "solid-transition-group";
 import { createVideoList } from "@/libs/datamodels/videoList";
 import { getTranscript } from "@/libs/services/assemblyai";
 import { updateMetadata } from "@/libs/services/updatemetadata";
+import {
+  Toast,
+  ToastContent,
+  ToastDescription,
+  ToastProgress,
+  ToastRegion,
+  ToastTitle,
+} from "@/components/ui/toast";
+import { toaster } from "@kobalte/core";
 
 const videos = createVideoList();
 
@@ -156,8 +163,6 @@ function VideoListItem({ video }: { video: Video }) {
         </div>
       </SheetTrigger>
       <SheetContent class="flex flex-col gap-8 overflow-y-scroll pb-0">
-        <Toaster class="bottom-[50px]" />
-
         <SheetHeader>
           <SheetTitle>Bewerk video</SheetTitle>
           <div class="border rounded overflow-hidden shrink-0">
@@ -234,21 +239,34 @@ function Keywords({ video }: { video: Video }) {
             const update = (val: string) => video.update("keywords", i(), val);
             const remove = () => {
               const lastValue = keyword();
-              toast(keyword(), {
-                description: "Trefwoord verwijderd.",
-                cancel: {
-                  label: "Ongedaan maken",
-                  onClick: () => update(lastValue),
-                },
-              });
+              toaster.show(({ toastId }) => (
+                <Toast toastId={toastId}>
+                  <ToastContent>
+                    <div class="flex justify-between">
+                      <div>
+                        <ToastTitle>{lastValue}</ToastTitle>
+                        <ToastDescription class="text-muted-foreground">
+                          Trefwoord verwijderd.
+                        </ToastDescription>
+                      </div>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          update(lastValue);
+                          toaster.dismiss(toastId);
+                        }}
+                      >
+                        Ongedaan maken
+                      </Button>
+                    </div>
+                  </ToastContent>
+                  <ToastProgress />
+                </Toast>
+              ));
+
               update("!REMOVED!");
             };
-            [
-              "listen",
-              "watch",
-              "read",
-              "                                                ",
-            ];
+
             return (
               <Show when={keyword() !== "!REMOVED!"}>
                 <div class="text-sm flex gap-2 transition-all [&.s-exit-to]:opacity-0">

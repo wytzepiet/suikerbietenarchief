@@ -6,5 +6,6 @@
     "javascriptreact": "html",
     "typescriptreact": "html"
   },
-  "deno.enable": true
+  "deno.enable": true,
+  "typescript.preferences.autoImportFileExcludePatterns": ["@kobalte/core"]
 }

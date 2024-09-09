@@ -5,14 +5,13 @@ import { createVideoList } from "@/libs/datamodels/videoList";
 import { supabase } from "@/libs/services/supabase/client";
 import { A, useNavigate, useParams } from "@solidjs/router";
 import {
-  Show,
   createEffect,
   createMemo,
   createResource,
   onCleanup,
   onMount,
 } from "solid-js";
-import gsap from "gsap/dist/gsap";
+import gsap from "gsap";
 import { isServer } from "solid-js/web";
 
 export default function VideoScreen() {

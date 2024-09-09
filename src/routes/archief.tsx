@@ -2,7 +2,7 @@ import { TextField, TextFieldRoot } from "@/components/ui/textfield";
 import { createVideoList } from "@/libs/datamodels/videoList";
 import { RouteSectionProps } from "@solidjs/router";
 import { For, onMount } from "solid-js";
-import gsap from "gsap/dist/gsap";
+import gsap from "gsap";
 import { TransitionGroup } from "solid-transition-group";
 import AnimatedText from "@/components/animatedText";
 import Page from "@/components/page";
