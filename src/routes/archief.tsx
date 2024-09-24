@@ -7,6 +7,7 @@ import { TransitionGroup } from "solid-transition-group";
 import AnimatedText from "@/components/animatedText";
 import Page from "@/components/page";
 import { VideoPreview } from "@/components/videoPreview";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
 const videos = createVideoList();
 
@@ -26,6 +27,16 @@ export default function Archief(props: RouteSectionProps) {
       });
     });
   };
+
+  const fetchTrigger = (<div />) as HTMLDivElement;
+  onMount(async () => {
+    gsap.registerPlugin(ScrollTrigger);
+    const trigger = ScrollTrigger.create({
+      trigger: fetchTrigger,
+      start: "top bottom+=200px",
+      onEnter: () => videos.fetchMore().then(() => trigger.refresh()),
+    });
+  });
 
   if (videos.videos.length) animateVideos();
   else videos.fetchVideos().then(animateVideos);
@@ -66,7 +77,8 @@ export default function Archief(props: RouteSectionProps) {
             </For>
           </TransitionGroup>
         </div>
-        <div class="h-screen"></div>
+        {fetchTrigger}
+        <div class="h-32"></div>
       </div>
     </Page>
   );

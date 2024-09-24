@@ -27,15 +27,10 @@ export default function App() {
                 <NavItem href="/">Home</NavItem>
                 <NavItem href="/archief">Archief</NavItem>
                 <NavItem href="/kaart">Kaart</NavItem>
-                <NavItem href="/admin">Inloggen</NavItem>
               </Card>
             </div>
 
-            <div id="smooth-wrapper">
-              <div id="smooth-content" class="page flex flex-col items-center">
-                <Suspense> {props.children} </Suspense>
-              </div>
-            </div>
+            <Suspense> {props.children} </Suspense>
 
             <ToastRegion>
               <ToastList />

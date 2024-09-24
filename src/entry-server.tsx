@@ -11,7 +11,13 @@ export default createHandler(() => (
           {assets}
         </head>
         <body>
-          <div id="app">{children}</div>
+          <div id="smooth-wrapper">
+            <div id="smooth-content">
+              <div id="app" class="page flex flex-col items-center">
+                {children}
+              </div>
+            </div>
+          </div>
           {scripts}
         </body>
       </html>

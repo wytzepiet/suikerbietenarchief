@@ -19,7 +19,8 @@ const Page = (props: {
   onMount(async () => {
     const { gsap } = await import("gsap");
     const { ScrollSmoother } = await import("gsap/ScrollSmoother");
-    gsap.registerPlugin(ScrollSmoother);
+    const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+    gsap.registerPlugin(ScrollSmoother, ScrollTrigger);
     scrollSmoother?.kill();
     scrollSmoother = ScrollSmoother.create({
       smooth: 1, // how long (in seconds) it takes to "catch up" to the native scroll position

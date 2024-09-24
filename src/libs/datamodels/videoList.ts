@@ -10,9 +10,15 @@ export function createVideoList() {
   const [videos, setVideos] = createStore<Video[]>([]);
   const [loading, setLoading] = createSignal(true);
 
-  const fetchVideos = async (ids?: number[]) => {
-    const filterBuilder = ref().select().neq("asset_id", null);
-    if (ids) filterBuilder.in("id", ids);
+  type FetchProps = { limit?: number; ids?: number[] };
+  let current: FetchProps = {};
+
+  const fetchVideos = async (props: FetchProps = {}) => {
+    props.limit ??= 9;
+    current = props;
+    const lim = props.limit!;
+    const filterBuilder = ref().select().limit(lim).neq("asset_id", null);
+    if (props.ids) filterBuilder.in("id", props.ids);
 
     const { data, error } = await filterBuilder;
     setLoading(false);
@@ -20,12 +26,17 @@ export function createVideoList() {
     setVideos(data.map(createVideo));
   };
 
+  const fetchMore = async () => {
+    current.limit = (current.limit ?? 0) + 9;
+    await fetchVideos(current);
+  };
+
   let searchTimeout: number;
   async function search(query: string) {
     const performSearch = async () => {
       const res = await searchVideos(query);
       const hits = res.hits.map((hit) => parseInt(hit.objectID));
-      fetchVideos(hits);
+      fetchVideos({ ids: hits });
     };
     if (searchTimeout) window.clearTimeout(searchTimeout);
     searchTimeout = window.setTimeout(performSearch, 200);
@@ -35,6 +46,7 @@ export function createVideoList() {
     videos,
     loading,
     fetchVideos,
+    fetchMore,
     search,
   };
 }

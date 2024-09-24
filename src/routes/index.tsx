@@ -8,6 +8,7 @@ import Page from "@/components/page";
 import { Card } from "@/components/ui/card";
 import { A } from "@solidjs/router";
 import inView from "@/libs/utils/inView";
+import { Spinner, SpinnerType } from "solid-spinner";
 
 const timeline = [
   {
@@ -55,27 +56,25 @@ const timeline = [
 ];
 
 export default function Index() {
-  let [blur, setBlur] = createSignal(0);
-
   onMount(async () => {
     const { gsap } = await import("gsap");
     const { ScrollTrigger } = await import("gsap/ScrollTrigger");
 
-    ScrollTrigger.create({
-      trigger: ".blurrer",
-      start: "top top",
-      end: "bottom top",
-      invalidateOnRefresh: true,
-      onUpdate: (self) => setBlur(self.progress * 20),
+    gsap.to(".spinner", { duration: 0.1, opacity: 0 });
+    gsap.from(".blurrer", { duration: 2, scale: 1.3, ease: "expo.out" });
+    gsap.to(".blurrer", { duration: 2, opacity: 1 });
+    gsap.to(".blurrer .background", {
+      filter: "blur(20px)",
+      scrollTrigger: {
+        trigger: ".blurrer",
+        start: "60% center",
+        end: "bottom top",
+        scrub: true,
+      },
     });
 
     document.querySelector("mux-player")?.addEventListener("canplay", () => {
       gsap.to("mux-player", { duration: 2, opacity: 1 });
-    });
-    gsap.from(".blurrer", {
-      duration: 2,
-      scale: 1.3,
-      ease: "expo.out",
     });
 
     gsap.from(".searchbar", {
@@ -89,12 +88,17 @@ export default function Index() {
 
   return (
     <Page class="flex flex-col items-center w-full" hideUntilMounted>
-      <div
-        class="blurrer h-screen w-full flex flex-col justify-end items-center relative"
-        style={`--blur: ${blur()}px;`}
-      >
-        <div data-speed="0.1" class="absolute inset-0 blur-[--blur]">
+      <div class="spinner fixed h-screen w-screen flex items-center justify-center">
+        <Spinner type={SpinnerType.oval} />
+      </div>
+      <div class="blurrer opacity-0 h-screen w-full flex flex-col justify-end items-center relative">
+        <div data-speed="0.1" class="background absolute inset-0">
           <div class="absolute inset-0 overflow-hidden">
+            <img
+              class="absolute inset-0 h-full object-cover"
+              src="https://cdn.sanity.io/images/te741qs0/production/1d7860b4d96c2c572bff229f630c464e1af77b46-4330x2711.jpg"
+              alt=""
+            />
             {/* @ts-ignore */}
             <mux-player
               class="absolute inset-0 object-cover opacity-0"
@@ -103,10 +107,6 @@ export default function Index() {
               loop
               muted
               style="--controls: none; --media-object-fit: cover"
-              loadeddata={(e: HTMLElement) => {
-                console.log("loadeddata", e);
-                gsap.to(e, { duration: 1, opacity: 1 });
-              }}
             />
           </div>
           <div class="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
@@ -216,20 +216,6 @@ export default function Index() {
             </div>
           </Card>
         </A>
-        <Card class="relative overflow-hidden max-w-lg group">
-          <div class="group-hover:scale-105 transition duration-300">
-            <img src="/map.png" class="opacity-30"></img>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <div class="p-4 max-w-md">
-                <h2 class="text-4xl">Bekijk de kaart</h2>
-                <p class="text-muted-foreground">
-                  Ontdek de belangrijkste plaatsen in de Nederlandse
-                  suikerindustrie
-                </p>
-              </div>
-            </div>
-          </div>
-        </Card>
       </div>
     </Page>
   );
