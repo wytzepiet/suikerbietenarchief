@@ -1,6 +1,7 @@
 import PageTitle from "./pageTitle";
 import { isServer } from "solid-js/web";
 import { onMount, Show } from "solid-js";
+import { useGsap } from "@/libs/utils/useGsap";
 
 let scrollSmoother: ScrollSmoother | null = null;
 
@@ -16,11 +17,9 @@ const Page = (props: {
     onMount(() => (document.body.style.opacity = "1"));
   }
 
-  onMount(async () => {
-    const { gsap } = await import("gsap");
-    const { ScrollSmoother } = await import("gsap/ScrollSmoother");
-    const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+  useGsap((gsap, { ScrollSmoother, ScrollTrigger }) => {
     gsap.registerPlugin(ScrollSmoother, ScrollTrigger);
+
     scrollSmoother?.kill();
     scrollSmoother = ScrollSmoother.create({
       smooth: 1, // how long (in seconds) it takes to "catch up" to the native scroll position

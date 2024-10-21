@@ -11,8 +11,8 @@ import {
   onCleanup,
   onMount,
 } from "solid-js";
-import gsap from "gsap";
 import { isServer } from "solid-js/web";
+import { useGsap } from "@/libs/utils/useGsap";
 
 export default function VideoScreen() {
   const params = useParams();
@@ -32,15 +32,13 @@ export default function VideoScreen() {
   let onGoBack = (e?: Event) => {};
   const goBack = (e?: Event) => onGoBack(e);
 
-  onMount(() => {
+  useGsap((gsap, { Flip }) => {
     createEffect(async () => {
       const query = `.video-${video()?.data.id}`;
       const flipElements = document.querySelectorAll<HTMLElement>(query);
       if (!flipElements[1]) return;
 
       document.body.style.overflowY = "hidden";
-
-      const { Flip } = await import("gsap/Flip");
 
       document.getElementById("main")!.style.opacity = "1";
 

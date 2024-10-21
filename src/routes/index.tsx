@@ -1,14 +1,15 @@
 import AnimatedText from "@/components/animatedText";
 import { TextField, TextFieldRoot } from "@/components/ui/textfield";
 import { ChevronRight, Search } from "lucide-solid";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import { onCleanup, onMount } from "solid-js";
 import timelineStyle from "@/libs/timeline.module.css";
 import "@mux/mux-player";
 import Page from "@/components/page";
 import { Card } from "@/components/ui/card";
 import { A } from "@solidjs/router";
-import inView from "@/libs/utils/inView";
 import { Spinner, SpinnerType } from "solid-spinner";
+import { useGsap } from "@/libs/utils/useGsap";
+import inView from "@/libs/utils/inView";
 
 const timeline = [
   {
@@ -56,10 +57,8 @@ const timeline = [
 ];
 
 export default function Index() {
-  onMount(async () => {
-    const { gsap } = await import("gsap");
-    const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-
+  useGsap((gsap, { ScrollTrigger }) => {
+    gsap.registerPlugin(ScrollTrigger);
     gsap.to(".spinner", { duration: 0.1, opacity: 0 });
     gsap.from(".blurrer", { duration: 2, scale: 1.3, ease: "expo.out" });
     gsap.to(".blurrer", { duration: 2, opacity: 1 });
