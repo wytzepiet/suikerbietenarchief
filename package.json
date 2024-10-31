@@ -27,7 +27,6 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "gsap": "npm:@gsap/shockingly@^3.12.5",
-    "location-picker": "^1.1.1",
     "lucide-solid": "^0.394.0",
     "openai": "^4.56.0",
     "shadcn-solid": "^0.7.5",
