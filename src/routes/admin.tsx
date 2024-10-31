@@ -15,31 +15,31 @@ import { setUser, user } from "@/libs/services/supabase/user";
 import { cn } from "@/libs/cn";
 
 const menu = [
-  {
-    title: "Dashboard",
-    href: "/admin",
-    icon: LayoutDashboard,
-  },
+  // {
+  //   title: "Dashboard",
+  //   href: "/admin",
+  //   icon: LayoutDashboard,
+  // },
   {
     title: "Videos",
-    href: "/admin/videos",
+    href: "/admin",
     icon: Video,
   },
-  {
-    title: "Fotosets",
-    href: "/admin/fotosets",
-    icon: Images,
-  },
+  // {
+  //   title: "Fotosets",
+  //   href: "/admin/fotosets",
+  //   icon: Images,
+  // },
   {
     title: "Locaties",
     href: "/admin/locaties",
     icon: MapPin,
   },
-  {
-    title: "Tijdlijn",
-    href: "/admin/tijdlijn",
-    icon: Calendar,
-  },
+  // {
+  //   title: "Tijdlijn",
+  //   href: "/admin/tijdlijn",
+  //   icon: Calendar,
+  // },
   {
     title: "Account",
     href: "/admin/account",
