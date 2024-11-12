@@ -17,7 +17,7 @@ export async function updateMetadata(
   const rawMetadata = await generateMetadata(title, prompt_hint, transcript);
   if (!rawMetadata) throw new Error("Failed to generate metadata");
 
-  const locationPromises = rawMetadata.locations.map(async (name) => {
+  rawMetadata.locations.forEach(async (name) => {
     const latLng = await latLngFromPlace(name);
     if (!latLng) return console.error("Couldn't get lat/lng for", name);
 
@@ -31,13 +31,15 @@ export async function updateMetadata(
       .insert({ name, ...latLng, description })
       .select();
     if (error) return console.error("Error inserting location:", error);
-    return data[0].id;
+
+    const { error: lvError } = await supabase()
+      .from("locations_videos")
+      .insert({ location_id: data[0].id, video_id: id });
+    if (lvError) console.error("Error inserting location_videos:", lvError);
   });
-  const unfilteredLocations = await Promise.all(locationPromises);
-  const locations = unfilteredLocations.filter((loc) => loc !== undefined);
 
   const { keywords, description } = rawMetadata;
-  const metadata = { keywords, description, locations };
+  const metadata = { keywords, description };
 
   const videos = supabase().from("videos");
   const { data, error } = await videos.update(metadata).eq("id", id).select();

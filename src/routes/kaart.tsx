@@ -40,11 +40,17 @@ export default function Kaart() {
   createEffect(async () => {
     const location = currentLocation();
     if (!location) return [];
-    console.log(location.id);
+
     const { data, error } = await supabase
-      .from("videos")
+      .from("locations_videos")
       .select()
-      .contains("locations", [location.id]);
+      .eq("location_id", location.id)
+      .then(async (locations) => {
+        return await supabase
+          .from("videos")
+          .select()
+          .in("id", locations.data?.map((v) => v.video_id) ?? []);
+      });
 
     if (error) throw error;
     setVideos(data.map(createVideo));

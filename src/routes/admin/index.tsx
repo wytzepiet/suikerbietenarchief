@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { A } from "@solidjs/router";
 import { Plus, Save, Sparkles, Trash2, Upload, VideoIcon } from "lucide-solid";
-import { For, Show, createSignal, untrack } from "solid-js";
+import { For, Show, createSignal } from "solid-js";
 import {
   Sheet,
   SheetContent,
@@ -33,7 +33,6 @@ import {
   ToastContent,
   ToastDescription,
   ToastProgress,
-  ToastRegion,
   ToastTitle,
 } from "@/components/ui/toast";
 import { toaster } from "@kobalte/core";
@@ -42,7 +41,7 @@ import { VideoFetchTrigger } from "@/components/videoFetchTrigger";
 const videos = createVideoList();
 
 export default function Videos() {
-  videos.fetchVideos({ limit: 20 });
+  videos.fetchVideos({ limit: 20000 });
 
   return (
     <main>
